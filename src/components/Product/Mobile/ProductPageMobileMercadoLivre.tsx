@@ -15,6 +15,7 @@ import { useProductSpecifications } from '@/hooks/useProductSpecifications';
 import { useProductFAQs } from '@/hooks/useProductFAQs';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import DynamicDeliveryMobile from './DynamicDeliveryMobile';
+import GoogleReviewsMobile from '../Sidebar/GoogleReviewsMobile';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 import { useWhatsAppLoading } from '@/hooks/useWhatsAppLoading';
 import WhatsAppLoadingOverlay from '@/components/ui/WhatsAppLoadingOverlay';
@@ -332,18 +333,8 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
         </div>
       </div>
 
-      {/* O que você precisa saber sobre este produto - EXATAMENTE como ML */}
-      <div className="border-t border-gray-100 p-4">
-        <h3 className="font-medium text-gray-900 mb-4">O que você precisa saber sobre este produto</h3>
-        <div className="space-y-3 text-sm text-gray-700">
-          {mainSpecs.map((spec, index) => (
-            <div key={index} className="flex justify-between py-1">
-              <span className="text-gray-600">• {spec.label}:</span>
-              <span className="font-medium">{spec.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Avaliações Google - substituindo seção de informações do produto */}
+      <GoogleReviewsMobile />
 
 
 
