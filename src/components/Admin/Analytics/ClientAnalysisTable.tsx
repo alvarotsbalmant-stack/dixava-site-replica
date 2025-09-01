@@ -1,88 +1,108 @@
-// @ts-nocheck
-import { useState, useEffect } from 'react';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
+  Search, 
+  Filter, 
+  Eye, 
   Clock, 
   ShoppingCart, 
-  Eye, 
-  TrendingUp, 
-  AlertTriangle,
-  Users,
-  Activity,
-  ArrowUpRight,
+  TrendingUp,
+  User,
+  Calendar,
+  MapPin,
+  Smartphone,
   RefreshCw
 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { ClientDetailModal } from './ClientDetailModal';
-
-interface ClientAnalysis {
-  user_id: string;
-  sessions: ClientSession[];
-  total_sessions: number;
-  total_time_spent: number;
-  total_purchases: number;
-  avg_session_duration: number;
-  churn_risk_score: number;
-  conversion_probability: number;
-  last_activity: string;
-  activity_status: 'active' | 'idle' | 'at_risk' | 'churned';
-  cart_abandonment_rate: number;
-  preferred_categories: string[];
-  device_preferences: string[];
-  geographic_data: {
-    city?: string;
-    state?: string;
-    country?: string;
-  };
-}
 
 interface ClientSession {
   session_id: string;
+  user_id: string | null;
   start_time: string;
-  end_time?: string;
-  duration: number;
-  pages: number;
-  cart_actions: number;
-  purchases: number;
-  conversion_events: any[];
+  end_time: string | null;
+  total_duration: number | null;
+  device_info: any;
+  location_info: any;
+  pages_visited: number;
+  products_viewed: number;
+  cart_items_added: number;
+  purchases_made: number;
+  total_spent: number;
+  last_activity: string;
 }
 
-interface ActivityRecord {
-  session_id: string;
+interface ClientAnalysis {
   user_id: string;
-  page_url: string;
-  timestamp: string;
-  action_type: string;
-  engagement_score?: number;
-  device_info?: any;
+  email: string | null;
+  first_session: string;
+  last_session: string;
+  total_sessions: number;
+  total_time_spent: number;
+  total_pages_visited: number;
+  total_products_viewed: number;
+  total_cart_additions: number;
+  total_purchases: number;
+  total_spent: number;
+  avg_session_duration: number;
+  conversion_rate: number;
+  favorite_categories: string[];
+  device_preference: string;
+  sessions: ClientSession[];
 }
 
 export const ClientAnalysisTable = () => {
-  const { 
-    loading, 
-    error, 
-    getClientSessions, 
-    getActivityAnalytics 
-  } = useAnalytics();
-  
   const [clients, setClients] = useState<ClientAnalysis[]>([]);
+  const [filteredClients, setFilteredClients] = useState<ClientAnalysis[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterBy, setFilterBy] = useState('all');
   const [selectedClient, setSelectedClient] = useState<ClientAnalysis | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
-  const loadClientAnalysis = async () => {
-    setRefreshing(true);
+  const fetchClientData = async () => {
+    setLoading(true);
     try {
-      const [sessions, activity] = await Promise.all([
-        getClientSessions(),
-        getActivityAnalytics()
-      ]);
+      // Buscar dados das sessões detalhadas
+      const { data: sessions, error: sessionsError } = await supabase
+        .from('user_journey_detailed')
+        .select(`
+          session_id,
+          user_id,
+          step_start_time,
+          step_end_time,
+          page_url,
+          action_type,
+          engagement_score,
+          funnel_stage
+        `)
+        .order('step_start_time', { ascending: false });
 
-      // Agrupar dados por usuário
+      if (sessionsError) throw sessionsError;
+
+      // Buscar dados de atividade em tempo real
+      const { data: activity, error: activityError } = await supabase
+        .from('realtime_activity')
+        .select('*')
+        .order('last_heartbeat', { ascending: false });
+
+      if (activityError) throw activityError;
+
+      // Buscar interações detalhadas
+      const { data: interactions, error: interactionsError } = await supabase
+        .from('page_interactions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (interactionsError) throw interactionsError;
+
+      // Processar dados para criar análise por cliente
       const clientMap = new Map<string, ClientAnalysis>();
 
       // Processar sessões
@@ -91,35 +111,42 @@ export const ClientAnalysisTable = () => {
         if (!clientMap.has(userId)) {
           clientMap.set(userId, {
             user_id: userId,
-            sessions: [],
+            email: null,
+            first_session: session.step_start_time,
+            last_session: session.step_start_time,
             total_sessions: 0,
             total_time_spent: 0,
+            total_pages_visited: 0,
+            total_products_viewed: 0,
+            total_cart_additions: 0,
             total_purchases: 0,
+            total_spent: 0,
             avg_session_duration: 0,
-            churn_risk_score: 0,
-            conversion_probability: 0,
-            last_activity: session.created_at,
-            activity_status: 'active',
-            cart_abandonment_rate: 0,
-            preferred_categories: [],
-            device_preferences: [],
-            geographic_data: {}
+            conversion_rate: 0,
+            favorite_categories: [],
+            device_preference: 'Desktop',
+            sessions: []
           });
         }
 
         const client = clientMap.get(userId)!;
-        client.sessions.push({
-          session_id: session.id,
-          start_time: session.created_at,
-          end_time: session.updated_at,
-          duration: 0,
-          pages: 0,
-          cart_actions: 0,
-          purchases: 0,
-          conversion_events: []
-        });
-        client.total_sessions++;
+        
+        // Atualizar estatísticas
+        if (session.step_start_time < client.first_session) {
+          client.first_session = session.step_start_time;
+        }
+        if (session.step_start_time > client.last_session) {
+          client.last_session = session.step_start_time;
+        }
 
+        client.total_pages_visited++;
+        
+        if (session.action_type === 'product_view') {
+          client.total_products_viewed++;
+        }
+        if (session.action_type === 'add_to_cart') {
+          client.total_cart_additions++;
+        }
         if (session.action_type === 'purchase') {
           client.total_purchases++;
         }
@@ -130,7 +157,9 @@ export const ClientAnalysisTable = () => {
         const userId = act.session_id;
         if (clientMap.has(userId)) {
           const client = clientMap.get(userId)!;
-          // Safe access to properties that might not exist
+          if (act.time_on_site_seconds) {
+            client.total_time_spent += act.time_on_site_seconds;
+          }
         }
       });
 
@@ -139,263 +168,339 @@ export const ClientAnalysisTable = () => {
         const uniqueSessions = new Set();
         sessions?.forEach(s => {
           if ((s.user_id || s.session_id) === client.user_id) {
-            uniqueSessions.add(s.id);
+            uniqueSessions.add(s.session_id);
           }
         });
-
+        
         client.total_sessions = uniqueSessions.size;
         client.avg_session_duration = client.total_sessions > 0 
           ? client.total_time_spent / client.total_sessions 
           : 0;
-        
-        // Calcular pontuação de risco de churn (simplificado)
-        const daysSinceLastActivity = Math.floor(
-          (Date.now() - new Date(client.last_activity).getTime()) / (1000 * 60 * 60 * 24)
-        );
-        
-        if (daysSinceLastActivity > 30) {
-          client.churn_risk_score = 0.8;
-          client.activity_status = 'churned';
-        } else if (daysSinceLastActivity > 14) {
-          client.churn_risk_score = 0.6;
-          client.activity_status = 'at_risk';
-        } else if (daysSinceLastActivity > 7) {
-          client.churn_risk_score = 0.3;
-          client.activity_status = 'idle';
-        } else {
-          client.churn_risk_score = 0.1;
-          client.activity_status = 'active';
-        }
-
-        // Calcular probabilidade de conversão
-        client.conversion_probability = client.total_purchases > 0 
-          ? Math.min(0.9, 0.3 + (client.total_purchases * 0.1))
-          : Math.max(0.1, 0.5 - (daysSinceLastActivity * 0.02));
+        client.conversion_rate = client.total_products_viewed > 0 
+          ? (client.total_purchases / client.total_products_viewed) * 100 
+          : 0;
       });
 
-      const clientAnalysis = Array.from(clientMap.values())
-        .sort((a, b) => b.total_sessions - a.total_sessions);
+      const clientsArray = Array.from(clientMap.values())
+        .filter(client => client.total_sessions > 0)
+        .sort((a, b) => new Date(b.last_session).getTime() - new Date(a.last_session).getTime());
 
-      setClients(clientAnalysis);
-    } catch (err) {
-      console.error('Erro ao carregar análise de clientes:', err);
-      toast.error('Erro ao carregar análise de clientes');
+      setClients(clientsArray);
+      setFilteredClients(clientsArray);
+    } catch (error) {
+      console.error('Erro ao buscar dados de clientes:', error);
     } finally {
-      setRefreshing(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadClientAnalysis();
+    fetchClientData();
   }, []);
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      active: { variant: "default" as const, label: "Ativo" },
-      idle: { variant: "secondary" as const, label: "Inativo" },
-      at_risk: { variant: "destructive" as const, label: "Em Risco" },
-      churned: { variant: "outline" as const, label: "Perdido" }
-    };
-    
-    const config = variants[status as keyof typeof variants] || variants.idle;
-    return <Badge variant={config.variant}>{config.label}</Badge>;
-  };
+  useEffect(() => {
+    let filtered = clients;
+
+    // Filtrar por termo de busca
+    if (searchTerm) {
+      filtered = filtered.filter(client => 
+        client.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filtrar por categoria
+    if (filterBy !== 'all') {
+      switch (filterBy) {
+        case 'high_value':
+          filtered = filtered.filter(client => client.total_spent > 500);
+          break;
+        case 'frequent':
+          filtered = filtered.filter(client => client.total_sessions > 5);
+          break;
+        case 'recent':
+          const oneWeekAgo = new Date();
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+          filtered = filtered.filter(client => 
+            new Date(client.last_session) > oneWeekAgo
+          );
+          break;
+        case 'converters':
+          filtered = filtered.filter(client => client.total_purchases > 0);
+          break;
+      }
+    }
+
+    setFilteredClients(filtered);
+  }, [clients, searchTerm, filterBy]);
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
-  const getRiskColor = (score: number) => {
-    if (score > 0.7) return "text-red-600";
-    if (score > 0.4) return "text-yellow-600";
-    return "text-green-600";
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  if (loading && clients.length === 0) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
+  const getClientStatus = (client: ClientAnalysis) => {
+    const lastSession = new Date(client.last_session);
+    const now = new Date();
+    const daysDiff = (now.getTime() - lastSession.getTime()) / (1000 * 3600 * 24);
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">
-            <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
-            <p>Erro ao carregar dados: {error}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+    if (daysDiff < 1) return { label: 'Ativo Hoje', variant: 'default' as const };
+    if (daysDiff < 7) return { label: 'Ativo Esta Semana', variant: 'secondary' as const };
+    if (daysDiff < 30) return { label: 'Ativo Este Mês', variant: 'outline' as const };
+    return { label: 'Inativo', variant: 'destructive' as const };
+  };
+
+  const handleViewClient = (client: ClientAnalysis) => {
+    setSelectedClient(client);
+    setShowDetailModal(true);
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header com métricas resumidas */}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Análise Individual de Clientes</h3>
+          <p className="text-sm text-muted-foreground">
+            Acompanhe o comportamento detalhado de cada cliente
+          </p>
+        </div>
+        <Button
+          onClick={fetchClientData}
+          disabled={loading}
+          variant="outline"
+          size="sm"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </Button>
+      </div>
+
+      {/* Filtros */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por ID do cliente ou email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="w-full sm:w-48">
+              <Select value={filterBy} onValueChange={setFilterBy}>
+                <SelectTrigger>
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filtrar por..." />
+                </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os Clientes</SelectItem>
+                    <SelectItem value="high_value">Alto Valor (&gt;R$500)</SelectItem>
+                    <SelectItem value="frequent">Frequentes (&gt;5 sessões)</SelectItem>
+                    <SelectItem value="recent">Ativos Recentemente</SelectItem>
+                    <SelectItem value="converters">Com Compras</SelectItem>
+                  </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Estatísticas Rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium">Total de Clientes</span>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total de Clientes</p>
+                <p className="text-2xl font-bold">{clients.length}</p>
+              </div>
+              <User className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-bold">{clients.length}</p>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Activity className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium">Clientes Ativos</span>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Clientes Ativos</p>
+                <p className="text-2xl font-bold">
+                  {clients.filter(c => {
+                    const daysDiff = (new Date().getTime() - new Date(c.last_session).getTime()) / (1000 * 3600 * 24);
+                    return daysDiff < 7;
+                  }).length}
+                </p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-bold">
-              {clients.filter(c => c.activity_status === 'active').length}
-            </p>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium">Em Risco</span>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Com Compras</p>
+                <p className="text-2xl font-bold">
+                  {clients.filter(c => c.total_purchases > 0).length}
+                </p>
+              </div>
+              <ShoppingCart className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-bold">
-              {clients.filter(c => c.activity_status === 'at_risk').length}
-            </p>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <ShoppingCart className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium">Conversões</span>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Tempo Médio</p>
+                <p className="text-2xl font-bold">
+                  {clients.length > 0 
+                    ? formatDuration(clients.reduce((acc, c) => acc + c.avg_session_duration, 0) / clients.length)
+                    : '0m'
+                  }
+                </p>
+              </div>
+              <Clock className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-bold">
-              {clients.reduce((sum, c) => sum + c.total_purchases, 0)}
-            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabela de clientes */}
+      {/* Tabela de Clientes */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center space-x-2">
-            <Users className="w-5 h-5" />
-            <span>Análise Detalhada de Clientes</span>
-          </CardTitle>
-          <Button 
-            onClick={loadClientAnalysis}
-            disabled={refreshing}
-            size="sm"
-            variant="outline"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
+        <CardHeader>
+          <CardTitle>Lista de Clientes</CardTitle>
+          <CardDescription>
+            {filteredClients.length} de {clients.length} clientes
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-medium">Cliente</th>
-                  <th className="text-left p-3 font-medium">Status</th>
-                  <th className="text-left p-3 font-medium">Sessões</th>
-                  <th className="text-left p-3 font-medium">Tempo Total</th>
-                  <th className="text-left p-3 font-medium">Compras</th>
-                  <th className="text-left p-3 font-medium">Risco Churn</th>
-                  <th className="text-left p-3 font-medium">Conversão</th>
-                  <th className="text-left p-3 font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clients.map((client) => (
-                  <tr key={client.user_id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">
-                      <div className="font-medium text-sm">
-                        {client.user_id.substring(0, 8)}...
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(client.last_activity).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      {getStatusBadge(client.activity_status)}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center space-x-1">
-                        <Eye className="w-4 h-4 text-gray-400" />
-                        <span className="font-medium">{client.total_sessions}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span>{formatDuration(client.total_time_spent)}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center space-x-1">
-                        <ShoppingCart className="w-4 h-4 text-gray-400" />
-                        <span className="font-medium">{client.total_purchases}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <span className={`font-medium ${getRiskColor(client.churn_risk_score)}`}>
-                        {(client.churn_risk_score * 100).toFixed(0)}%
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center space-x-1">
-                        <TrendingUp className="w-4 h-4 text-gray-400" />
-                        <span>{(client.conversion_probability * 100).toFixed(0)}%</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedClient(client);
-                          setModalOpen(true);
-                        }}
-                      >
-                        <ArrowUpRight className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {clients.length === 0 && !loading && (
-            <div className="text-center py-8 text-gray-500">
-              <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>Nenhum cliente encontrado</p>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">Carregando dados...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Sessões</TableHead>
+                    <TableHead>Tempo Total</TableHead>
+                    <TableHead>Produtos Vistos</TableHead>
+                    <TableHead>Compras</TableHead>
+                    <TableHead>Conversão</TableHead>
+                    <TableHead>Última Atividade</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredClients.map((client) => {
+                    const status = getClientStatus(client);
+                    return (
+                      <TableRow key={client.user_id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">
+                              {client.email || `Cliente ${client.user_id.slice(-8)}`}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              ID: {client.user_id.slice(-12)}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={status.variant}>
+                            {status.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium">{client.total_sessions}</span>
+                        </TableCell>
+                        <TableCell>
+                          {formatDuration(client.total_time_spent)}
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium">{client.total_products_viewed}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium">{client.total_purchases}</span>
+                          {client.total_spent > 0 && (
+                            <p className="text-sm text-muted-foreground">
+                              R$ {client.total_spent.toFixed(2)}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-medium ${
+                            client.conversion_rate > 10 ? 'text-green-600' :
+                            client.conversion_rate > 5 ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                            {client.conversion_rate.toFixed(1)}%
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <p>{formatDate(client.last_session)}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewClient(client)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver Detalhes
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {filteredClients.length === 0 && !loading && (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                        Nenhum cliente encontrado com os filtros aplicados
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Modal de detalhes */}
+      {/* Modal de Detalhes do Cliente */}
       {selectedClient && (
         <ClientDetailModal
           client={selectedClient}
-          open={modalOpen}
+          open={showDetailModal}
           onClose={() => {
-            setModalOpen(false);
+            setShowDetailModal(false);
             setSelectedClient(null);
           }}
         />
@@ -403,3 +508,4 @@ export const ClientAnalysisTable = () => {
     </div>
   );
 };
+

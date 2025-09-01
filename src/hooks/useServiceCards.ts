@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,33 +19,13 @@ export interface ServiceCard {
   updated_at: string;
 }
 
-// Cache global para os service cards
-let serviceCardsCache: ServiceCard[] | null = null;
-let cacheTimestamp: number | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
-
 export const useServiceCards = () => {
   const [serviceCards, setServiceCards] = useState<ServiceCard[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const hasInitialized = useRef(false);
 
-  const isValidCache = () => {
-    return serviceCardsCache && 
-           cacheTimestamp && 
-           (Date.now() - cacheTimestamp) < CACHE_DURATION;
-  };
-
-  const fetchServiceCards = async (forceRefresh = false) => {
-    // Se já temos cache válido e não é um refresh forçado, usar o cache
-    if (!forceRefresh && isValidCache()) {
-      setServiceCards(serviceCardsCache!);
-      setLoading(false);
-      return;
-    }
-
+  const fetchServiceCards = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('service_cards')
         .select('*')
@@ -53,14 +33,7 @@ export const useServiceCards = () => {
         .order('position');
 
       if (error) throw error;
-      
-      const cards = data || [];
-      
-      // Atualizar cache
-      serviceCardsCache = cards;
-      cacheTimestamp = Date.now();
-      
-      setServiceCards(cards);
+      setServiceCards(data || []);
     } catch (error: any) {
       console.error('Erro ao buscar cards de serviços:', error);
       toast({
@@ -82,10 +55,6 @@ export const useServiceCards = () => {
         .single();
 
       if (error) throw error;
-
-      // Invalidar cache
-      serviceCardsCache = null;
-      cacheTimestamp = null;
 
       setServiceCards(prev => [...prev, data]);
       toast({
@@ -114,10 +83,6 @@ export const useServiceCards = () => {
 
       if (error) throw error;
 
-      // Invalidar cache
-      serviceCardsCache = null;
-      cacheTimestamp = null;
-
       setServiceCards(prev => prev.map(card => card.id === id ? data : card));
       toast({
         title: "Card de serviço atualizado com sucesso!",
@@ -143,10 +108,6 @@ export const useServiceCards = () => {
 
       if (error) throw error;
 
-      // Invalidar cache
-      serviceCardsCache = null;
-      cacheTimestamp = null;
-
       setServiceCards(prev => prev.filter(card => card.id !== id));
       toast({
         title: "Card de serviço excluído com sucesso!",
@@ -164,10 +125,7 @@ export const useServiceCards = () => {
   };
 
   useEffect(() => {
-    if (!hasInitialized.current) {
-      hasInitialized.current = true;
-      fetchServiceCards();
-    }
+    fetchServiceCards();
   }, []);
 
   return {
@@ -176,6 +134,6 @@ export const useServiceCards = () => {
     addServiceCard,
     updateServiceCard,
     deleteServiceCard,
-    refetch: () => fetchServiceCards(true) // Force refresh
+    refetch: fetchServiceCards
   };
 };
