@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UTI DOS GAMES - A Loja de Games Mais Tradicional de Colatina</title>
+    <meta name="description" content="UTI DOS GAMES - Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região. PlayStation, Xbox, Nintendo, PC Gaming, Acessórios e muito mais!" />
+    <meta name="keywords" content="games, jogos, playstation, xbox, nintendo, pc gaming, colatina, espírito santo, loja de games, console, acessórios" />
+    <meta name="author" content="UTI DOS GAMES" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://uti-gamer-shop-brasa.lovable.app/" />
+    <meta property="og:title" content="UTI DOS GAMES - A Loja de Games Mais Tradicional de Colatina" />
+    <meta property="og:description" content="Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região. PlayStation, Xbox, Nintendo, PC Gaming e muito mais!" />
+    <meta property="og:image" content="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://uti-gamer-shop-brasa.lovable.app/" />
+    <meta property="twitter:title" content="UTI DOS GAMES - A Loja de Games Mais Tradicional de Colatina" />
+    <meta property="twitter:description" content="Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região." />
+    <meta property="twitter:image" content="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" />
+
+    <!-- Critical Resource Hints - Phase 3 Optimization -->
+    <!-- DNS Prefetch para resolver nomes mais rápido -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.gpteng.co">
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="https://upload.wikimedia.org">
+    <link rel="dns-prefetch" href="//lovable-uploads">
+    
+    <!-- Preconnect para recursos críticos (estabelece conexão completa) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+    
+    <!-- Prefetch para recursos que serão usados na próxima navegação -->
+    <link rel="prefetch" href="/placeholder.svg">
+    <link rel="prefetch" href="/placeholder-image.webp">
+    <link rel="prefetch" href="/placeholder-image-error.webp">
+    
+    <!-- Preload para recursos críticos da primeira renderização -->
+    <link rel="preload" href="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" as="image" type="image/png">
+    <link rel="preload" href="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" as="image" type="image/png">
+    
+    <!-- Professional Fonts from Google Fonts com display=swap para melhor performance -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#DC2626" />
+    
+    <!-- Performance and SEO optimizations -->
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://uti-gamer-shop-brasa.lovable.app/" />
+    
+    <!-- Performance optimizations -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- Preload critical resources -->
+    <link rel="modulepreload" href="/src/main.tsx">
+    
+    <!-- Critical CSS inline para evitar FOUC -->
+    <style>
+      /* Critical CSS para loading inicial */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        color-scheme: light dark;
+        color: rgba(255, 255, 255, 0.87);
+        background-color: #242424;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-size-adjust: 100%;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading spinner para melhor UX */
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #DC2626;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 9999;
+      }
+      
+      @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+      
+      /* Hide spinner when app loads */
+      .app-loaded .loading-spinner {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <!-- Loading spinner -->
+    <div class="loading-spinner"></div>
+    
+    <div id="root"></div>
+    
+    <!-- Scripts com otimizações -->
+    <script type="module" src="/src/main.tsx"></script>
+    <script src="https://cdn.gpteng.co/gptengineer.js" defer></script>
+    
+    <!-- Remove loading spinner when app loads -->
+    <script>
+      window.addEventListener('load', function() {
+        document.body.classList.add('app-loaded');
+      });
+    </script>
+  </body>
+</html>
+
