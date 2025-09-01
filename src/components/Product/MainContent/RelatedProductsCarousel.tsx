@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product, useProducts } from '@/hooks/useProducts';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
+import SectionTitle from '@/components/SectionTitle';
 
 interface RelatedProductsCarouselProps {
   currentProduct: Product;
@@ -104,19 +105,11 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
   return (
     <div className={cn("space-y-6", className)}>
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h3 className="text-xl font-bold text-gray-900">
-          Produtos Relacionados
-        </h3>
-        <Button
-          variant="default"
-          size="sm"
-          className="bg-red-600 hover:bg-red-700 text-white border-0 flex-shrink-0 w-full sm:w-auto font-medium"
-        >
-          Ver Todos
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
+      <SectionTitle 
+        title="Produtos Relacionados"
+        onViewAllClick={() => console.log('Ver todos produtos relacionados')}
+        className="px-0"
+      />
 
       {/* Products Grid / Scroll Container */}
       <div className="relative group">

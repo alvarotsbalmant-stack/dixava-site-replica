@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import FavoriteButton from '@/components/FavoriteButton';
@@ -9,6 +8,7 @@ import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
+import SectionTitle from '@/components/SectionTitle';
 
 interface RelatedProductsMobileProps {
   product: Product;
@@ -46,7 +46,11 @@ const RelatedProductsMobile: React.FC<RelatedProductsMobileProps> = ({ product }
   if (loading) {
     return (
       <div className="bg-white p-4">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Produtos relacionados</h3>
+        <SectionTitle 
+          title="Produtos relacionados"
+          showViewAllButton={false}
+          className="mb-4"
+        />
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="animate-pulse">
@@ -66,14 +70,11 @@ const RelatedProductsMobile: React.FC<RelatedProductsMobileProps> = ({ product }
 
   return (
     <div className="bg-white p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-gray-900">
-          Produtos relacionados
-        </h3>
-        <Button variant="ghost" size="sm" className="text-red-600">
-          Ver todos
-        </Button>
-      </div>
+      <SectionTitle 
+        title="Produtos relacionados"
+        onViewAllClick={() => console.log('Ver todos produtos relacionados')}
+        className="mb-4"
+      />
 
       {/* Horizontal Scroll para mobile */}
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
