@@ -1,0 +1,29 @@
+/* Centralized card gap utilities */
+@layer utilities {
+  .card-grid-gap {
+    gap: 2.5rem; /* 40px - mobile */
+  }
+  
+  @media (min-width: 768px) {
+    .card-grid-gap {
+      gap: 0.75rem; /* 12px - desktop */
+    }
+  }
+}
+
+/* Alternative approach using CSS custom properties */
+:root {
+  --card-gap-mobile: 2.5rem; /* 40px */
+  --card-gap-desktop: 0.75rem; /* 12px */
+}
+
+.product-cards-container {
+  gap: var(--card-gap-mobile);
+}
+
+@media (min-width: 768px) {
+  .product-cards-container {
+    gap: var(--card-gap-desktop);
+  }
+}
+

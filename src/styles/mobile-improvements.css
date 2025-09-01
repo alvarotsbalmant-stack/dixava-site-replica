@@ -1,0 +1,38 @@
+/* Mobile Improvements CSS */
+
+/* Adicionar padding bottom para compensar o bottom navigation bar */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: 64px; /* Altura do bottom navigation bar */
+  }
+  
+  /* Garantir que o footer não seja coberto pelo bottom nav */
+  footer {
+    margin-bottom: 64px;
+  }
+  
+  /* Ajustar floating action button para não conflitar com bottom nav */
+  .floating-action-button {
+    bottom: 80px !important;
+  }
+  
+  /* Header é estático no mobile - SEM padding top */
+  main {
+    padding-top: 0 !important;
+  }
+}
+
+/* Header fixo apenas no desktop - MANTER espaçamento original */
+@media (min-width: 1024px) {
+  body {
+    padding-bottom: 0;
+  }
+  
+  footer {
+    margin-bottom: 0;
+  }
+  
+  /* NÃO alterar o padding-top do main no desktop - deixar como estava */
+  /* O espaçamento original do desktop deve ser preservado */
+}
+

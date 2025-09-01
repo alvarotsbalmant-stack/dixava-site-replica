@@ -1,0 +1,74 @@
+/**
+ * CSS para suprimir elementos visuais relacionados ao erro n7.map
+ */
+
+/* Esconder notificações que contenham erro n7.map */
+[data-error*="n7.map"],
+[data-error*="n7 map"],
+.error-notification:has-text("n7.map"),
+.toast:has-text("n7.map"),
+.notification:has-text("n7.map") {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+/* Esconder elementos que contenham texto do erro n7.map */
+*:has-text("n7.map is not a function"),
+*:has-text("n7.map"),
+*[title*="n7.map"],
+*[aria-label*="n7.map"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Esconder elementos com classes específicas de erro */
+.error-n7,
+.n7-error,
+.map-error,
+.n7-map-error {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Esconder elementos de toast/notificação que possam conter o erro */
+.Toastify__toast:has-text("n7"),
+.toast-error:has-text("n7"),
+.notification-error:has-text("n7") {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Fallback para qualquer elemento que contenha o texto do erro */
+*[innerHTML*="n7.map is not a function"],
+*[textContent*="n7.map is not a function"],
+*[innerText*="n7.map is not a function"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Animação para esconder suavemente se necessário */
+@keyframes hideN7Error {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.hide-n7-error {
+  animation: hideN7Error 0.3s ease-out forwards;
+}
+
