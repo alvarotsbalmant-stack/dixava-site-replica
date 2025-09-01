@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
+import GoogleReviewsMobile from '../Sidebar/GoogleReviewsMobile';
 
 interface ProductSectionsMobileMercadoLivreProps {
   product: Product;
@@ -101,18 +102,8 @@ const ProductSectionsMobileMercadoLivre: React.FC<ProductSectionsMobileMercadoLi
         </Button>
       </div>
 
-      {/* O que você precisa saber sobre este produto */}
-      <div className="border-t border-gray-100 p-4">
-        <h3 className="font-medium text-gray-900 mb-4">O que você precisa saber sobre este produto</h3>
-        <div className="space-y-3 text-sm text-gray-700">
-          {mainSpecs.slice(0, 9).map((spec, index) => (
-            <div key={index} className="flex justify-between py-1">
-              <span className="text-gray-600">• {spec.label}:</span>
-              <span className="font-medium">{spec.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Avaliações Google - substituindo seção de informações do produto */}
+      <GoogleReviewsMobile />
 
       {/* Vendedor */}
       <div className="border-t border-gray-100 p-4">

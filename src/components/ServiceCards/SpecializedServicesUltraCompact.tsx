@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles, Gamepad2, Wrench, Search, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useMemo, memo } from "react";
 
-const SpecializedServicesUltraCompact = () => {
+const SpecializedServicesUltraCompact = memo(() => {
   const { serviceCards, loading } = useServiceCards();
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-  const handleCardClick = (linkUrl: string, cardTitle: string) => {
+  const handleCardClick = useMemo(() => (linkUrl: string, cardTitle: string) => {
     if (linkUrl.startsWith("http")) {
       window.open(linkUrl, "_blank");
     } else {
@@ -31,17 +31,17 @@ const SpecializedServicesUltraCompact = () => {
         navigate(linkUrl);
       }
     }
-  };
+  }, [navigate]);
 
-  const handleImageError = (id: string) => {
+  const handleImageError = useMemo(() => (id: string) => {
     setImageErrors(prev => ({
       ...prev,
       [id]: true
     }));
-  };
+  }, []);
 
-  // Ícones únicos para cada serviço
-  const serviceIcons = [Gamepad2, Wrench, Search, Settings];
+  // Ícones únicos para cada serviço - memoizados
+  const serviceIcons = useMemo(() => [Gamepad2, Wrench, Search, Settings], []);
 
   return (
     <section className="relative py-6 md:py-8 overflow-hidden bg-white">
@@ -72,9 +72,9 @@ const SpecializedServicesUltraCompact = () => {
         </div>
 
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6">
             {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-32 md:h-36 w-full bg-gray-200 rounded-xl" />
+              <Skeleton key={i} className="h-24 md:h-36 w-full bg-gray-200 rounded-xl" />
             ))}
           </div>
         )}
@@ -82,7 +82,7 @@ const SpecializedServicesUltraCompact = () => {
         {!loading && serviceCards.length > 0 && (
           <div className="relative">
             {/* Grid clean */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6 mb-6">
               {serviceCards.map((card, index) => {
                 const IconComponent = serviceIcons[index % 4];
                 
@@ -104,50 +104,43 @@ const SpecializedServicesUltraCompact = () => {
                         backgroundColor: card.background_image_url ? 'transparent' : 'white'
                       }}
                     >
-                      <CardContent className="p-4 md:p-6 h-full flex flex-col justify-between relative">
+                      <CardContent className="p-3 md:p-6 h-full flex flex-col relative">
                         {/* Número clean */}
-                        <div className="absolute top-3 right-3 text-6xl md:text-7xl font-black text-gray-100 leading-none select-none">
+                        <div className="absolute top-2 right-2 md:top-3 md:right-3 text-4xl md:text-7xl font-black text-gray-100 leading-none select-none">
                           {String(index + 1).padStart(2, '0')}
                         </div>
                         
-                        <div className="relative z-10">
+                        <div className="relative z-10 flex flex-col h-full">
                           {/* Ícone clean */}
-                          <div className="flex items-center gap-3 mb-3">
+                          <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
                             {card.image_url && !imageErrors[card.id] ? (
                               <img 
                                 src={card.image_url} 
                                 alt={card.title}
-                                className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                                className="w-6 h-6 md:w-10 md:h-10 object-contain"
                                 onError={() => handleImageError(card.id)}
                               />
                             ) : (
-                              <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-900 rounded-lg flex items-center justify-center">
-                                <IconComponent className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                              <div className="w-6 h-6 md:w-10 md:h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                                <IconComponent className="w-3 h-3 md:w-5 md:h-5 text-white" />
                               </div>
                             )}
                           </div>
                           
                           {/* Conteúdo clean */}
-                          <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 leading-tight">
+                          <h3 className="text-base md:text-xl font-semibold text-gray-900 mb-1 md:mb-2 leading-tight">
                             {card.title}
                           </h3>
-                          <p className="text-sm md:text-base text-gray-600 mb-4 leading-relaxed">
+                          <p className="text-xs md:text-base text-gray-600 mb-3 md:mb-4 leading-relaxed line-clamp-2 md:line-clamp-none flex-grow">
                             {card.description}
                           </p>
                           
-                          {/* Botão clean estilo GameStop */}
-                          <div className="bg-black text-white rounded font-semibold hover:bg-gray-800 transition-colors duration-200 flex items-center justify-center w-fit px-4 py-2" style={{ 
-                            border: '2px solid #000000',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            lineHeight: '1',
-                            height: '36px',
-                            minWidth: '100px',
-                            padding: '6px 12px'
-                          }}>
-                            <span>Saiba mais</span>
-                            <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-2 transition-transform duration-300 group-hover:translate-x-0.5" />
+                          {/* Botão clean estilo GameStop - sempre na base do card no mobile */}
+                          <div className="mt-auto">
+                            <div className="bg-black text-white rounded font-semibold hover:bg-gray-800 transition-colors duration-200 flex items-center justify-center w-fit h-8 md:h-9 px-3 md:px-4 text-xs md:text-sm border-2 border-black">
+                              <span>Saiba mais</span>
+                              <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-1 md:ml-2 transition-transform duration-300 group-hover:translate-x-0.5" />
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -167,7 +160,9 @@ const SpecializedServicesUltraCompact = () => {
       </div>
     </section>
   );
-};
+});
+
+SpecializedServicesUltraCompact.displayName = 'SpecializedServicesUltraCompact';
 
 export default SpecializedServicesUltraCompact;
 
