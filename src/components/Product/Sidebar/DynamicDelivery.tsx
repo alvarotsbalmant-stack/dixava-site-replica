@@ -37,6 +37,7 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
     const colatinaTime = new Date();
     const hours = colatinaTime.getHours();
     const minutes = colatinaTime.getMinutes();
+    const dayOfWeek = colatinaTime.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
     
     // Verificar se é elegível para frete grátis
     const eligible = productPrice >= 150;
@@ -49,46 +50,76 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
       setBadgeText('FRETE GRÁTIS ACIMA DE R$ 150');
     }
 
-    // Calcular tempo até 16h
-    const cutoffHour = 16;
-    const cutoffMinute = 0;
-    
-    let hoursLeft = cutoffHour - hours;
-    let minutesLeft = cutoffMinute - minutes;
-    
-    // Ajustar se os minutos são negativos
-    if (minutesLeft < 0) {
-      hoursLeft -= 1;
-      minutesLeft += 60;
-    }
+    // Função para calcular próxima segunda-feira
+    const getNextMonday = () => {
+      const nextMonday = new Date(colatinaTime);
+      const daysUntilMonday = (8 - dayOfWeek) % 7 || 7; // Se já é segunda, próxima segunda
+      nextMonday.setDate(nextMonday.getDate() + daysUntilMonday);
+      return nextMonday.toLocaleDateString('pt-BR', { 
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+      });
+    };
 
-    // Determinar mensagem de entrega e tempo
-    if (hours >= cutoffHour) {
-      // Após 16h - entrega amanhã
-      setDeliveryMessage('Chegará grátis amanhã');
-      setDeliveryTextMessage('Entrega amanhã para Colatina-ES');
+    // Lógica de entrega baseada no dia da semana
+    if (dayOfWeek === 0) {
+      // DOMINGO - Loja fechada, entrega na segunda
+      setDeliveryMessage('Chegará grátis na segunda-feira');
+      setDeliveryTextMessage(`Entrega na ${getNextMonday()} para Colatina-ES`);
+      setTimeMessage('Loja fechada - Comprando em qualquer horário');
+    } else if (dayOfWeek === 6) {
+      // SÁBADO - Entrega na segunda o dia todo
+      setDeliveryMessage('Chegará grátis na segunda-feira');
+      setDeliveryTextMessage(`Entrega na ${getNextMonday()} para Colatina-ES`);
+      setTimeMessage('Comprando em qualquer horário');
+    } else if (dayOfWeek === 5 && hours >= 16) {
+      // SEXTA-FEIRA após 16h
+      setDeliveryMessage('Chegará grátis na segunda-feira');
+      setDeliveryTextMessage(`Entrega na ${getNextMonday()} para Colatina-ES`);
       setTimeMessage('Comprando em qualquer horário');
     } else {
-      // Antes das 16h - entrega hoje
-      setDeliveryMessage('Chegará grátis hoje');
-      setDeliveryTextMessage('Entrega hoje para Colatina-ES');
+      // SEGUNDA A QUINTA (qualquer hora) ou SEXTA antes das 16h
+      const cutoffHour = 16;
+      const cutoffMinute = 0;
       
-      // Calcular mensagem de tempo baseada nas regras específicas
-      const totalMinutesLeft = hoursLeft * 60 + minutesLeft;
+      let hoursLeft = cutoffHour - hours;
+      let minutesLeft = cutoffMinute - minutes;
       
-      if (totalMinutesLeft > 60) {
-        // Mais de 1 hora - mostrar horas
-        setTimeMessage(`Comprando em ${hoursLeft} ${hoursLeft === 1 ? 'hora' : 'horas'}`);
-      } else if (totalMinutesLeft > 10) {
-        // Entre 11-60 minutos - arredondar para dezenas
-        const roundedMinutes = Math.ceil(totalMinutesLeft / 10) * 10;
-        setTimeMessage(`Comprando em ${roundedMinutes} minutos`);
-      } else if (totalMinutesLeft > 0) {
-        // 1-10 minutos - mostrar exato
-        setTimeMessage(`Comprando em ${totalMinutesLeft} ${totalMinutesLeft === 1 ? 'minuto' : 'minutos'}`);
-      } else {
-        // Último minuto
+      // Ajustar se os minutos são negativos
+      if (minutesLeft < 0) {
+        hoursLeft -= 1;
+        minutesLeft += 60;
+      }
+
+      // Determinar mensagem de entrega e tempo
+      if (hours >= cutoffHour) {
+        // Após 16h em dia útil - entrega amanhã
+        setDeliveryMessage('Chegará grátis amanhã');
+        setDeliveryTextMessage('Entrega amanhã para Colatina-ES');
         setTimeMessage('Comprando em qualquer horário');
+      } else {
+        // Antes das 16h em dia útil - entrega hoje
+        setDeliveryMessage('Chegará grátis hoje');
+        setDeliveryTextMessage('Entrega hoje para Colatina-ES');
+        
+        // Calcular mensagem de tempo baseada nas regras específicas
+        const totalMinutesLeft = hoursLeft * 60 + minutesLeft;
+        
+        if (totalMinutesLeft > 60) {
+          // Mais de 1 hora - mostrar horas
+          setTimeMessage(`Comprando em ${hoursLeft} ${hoursLeft === 1 ? 'hora' : 'horas'}`);
+        } else if (totalMinutesLeft > 10) {
+          // Entre 11-60 minutos - arredondar para dezenas
+          const roundedMinutes = Math.ceil(totalMinutesLeft / 10) * 10;
+          setTimeMessage(`Comprando em ${roundedMinutes} minutos`);
+        } else if (totalMinutesLeft > 0) {
+          // 1-10 minutos - mostrar exato
+          setTimeMessage(`Comprando em ${totalMinutesLeft} ${totalMinutesLeft === 1 ? 'minuto' : 'minutos'}`);
+        } else {
+          // Último minuto
+          setTimeMessage('Comprando em qualquer horário');
+        }
       }
     }
   }, [currentTime, productPrice]);

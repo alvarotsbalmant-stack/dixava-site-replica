@@ -45,7 +45,10 @@ const FeaturedProductsSection = ({
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   const handleViewAllClick = () => {
-    navigate(viewAllLink);
+    // Gerar link automático se não configurado
+    const finalLink = viewAllLink || `/secao/${sectionKey}`;
+    console.log(`[FeaturedProductsSection] Navegando para: ${finalLink}`);
+    navigate(finalLink);
   };
 
   // Função para converter cor hex para rgba com transparência (sistema adaptativo)
@@ -195,6 +198,7 @@ const FeaturedProductsSection = ({
             titlePart2={titlePart2}
             titleColor1={titleColor1}
             titleColor2={titleColor2}
+            onViewAllClick={handleViewAllClick}
             className="mb-0" 
           />
         </div>
@@ -227,12 +231,12 @@ const FeaturedProductsSection = ({
               </div>
             )}
 
-            {/* Left Navigation Button */}
+            {/* Left Navigation Button - Hidden on mobile */}
             {canScrollLeft && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
                 onClick={scrollLeft}
                 aria-label="Produtos anteriores"
               >
@@ -240,12 +244,12 @@ const FeaturedProductsSection = ({
               </Button>
             )}
 
-            {/* Right Navigation Button */}
+            {/* Right Navigation Button - Hidden on mobile */}
             {canScrollRight && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
                 onClick={scrollRight}
                 aria-label="Próximos produtos"
               >

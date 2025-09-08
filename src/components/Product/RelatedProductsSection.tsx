@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Product, useProducts } from '@/hooks/useProducts';
+import { useRelatedProducts } from '@/hooks/useProductCache';
+import { CachedProduct } from '@/utils/ProductCacheManager';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
@@ -16,15 +17,16 @@ import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
 
 interface RelatedProductsSectionProps {
-  product: Product;
+  product: CachedProduct;
 }
 
 const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product }) => {
-  const { products: allProducts, loading } = useProducts();
+  // ✅ NOVO: Hook otimizado que busca apenas produtos relacionados
+  const { relatedProducts, loading } = useRelatedProducts(product, 8);
+  
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
   // Usa novo sistema simples baseado no produto para rastreamento preciso
   const scrollContainerRef = useSimpleHorizontalScroll(`related-products-${product.id}`, true);
@@ -34,30 +36,9 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   // Sistema GameStop: Detecção mobile para gradientes
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
 
-  useEffect(() => {
-    if (allProducts.length > 0 && product) {
-      // Lógica para produtos relacionados baseada em tags
-      const currentProductTags = product.tags?.map(t => t.id) || [];
-      const related = allProducts
-        .filter(p => 
-          p.id !== product.id && 
-          p.tags?.some(tag => currentProductTags.includes(tag.id))
-        )
-        .slice(0, 8);
-      
-      // Se não houver produtos relacionados por tag, pegar produtos aleatórios
-      if (related.length < 4) {
-        const others = allProducts
-          .filter(p => p.id !== product.id && !related.some(r => r.id === p.id))
-          .slice(0, 8 - related.length);
-        related.push(...others);
-      }
+  // ✅ REMOVIDO: Lógica complexa de filtragem - agora é feita no cache manager
 
-      setRelatedProducts(related);
-    }
-  }, [allProducts, product]);
-
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: CachedProduct) => {
     addToCart(product);
   };
 
@@ -161,12 +142,12 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
 
         {/* Products Grid / Scroll Container */}
         <div className="relative group">
-          {/* Left Navigation Button */}
+          {/* Left Navigation Button - Hidden on mobile */}
           {canScrollLeft && (
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
               onClick={scrollLeft}
               aria-label="Produtos anteriores"
             >
@@ -174,12 +155,12 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
             </Button>
           )}
 
-          {/* Right Navigation Button */}
+          {/* Right Navigation Button - Hidden on mobile */}
           {canScrollRight && (
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
               onClick={scrollRight}
               aria-label="Próximos produtos"
             >

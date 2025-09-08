@@ -31,12 +31,12 @@ export const validateBulkEditData = (products: ImportedProduct[]): ValidationErr
   products.forEach((product, index) => {
     const row = index + 2; // +2 porque começa na linha 2 do Excel (linha 1 é header)
     
-    // SKU é obrigatório para edição
-    if (!product.sku_code?.trim()) {
+    // SKU ou nome é obrigatório para identificar o produto
+    if (!product.sku_code?.trim() && !product.name?.trim()) {
       errors.push({
         row,
         field: 'sku_code',
-        message: 'Código SKU é obrigatório para identificar o produto',
+        message: 'Código SKU ou nome do produto é obrigatório para identificar o produto',
         severity: 'error'
       });
     }
@@ -163,16 +163,31 @@ const processJsonField = (value: any): any => {
   return value;
 };
 
-// Função para buscar produto por SKU
-const findProductBySku = async (sku: string): Promise<Product | null> => {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('sku_code', sku)
-    .single();
-    
-  if (error || !data) return null;
-  return data as Product;
+// Função para buscar produto por SKU ou nome
+const findProductBySkuOrName = async (sku?: string, name?: string): Promise<Product | null> => {
+  // Primeiro tenta buscar por SKU se fornecido
+  if (sku?.trim()) {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('sku_code', sku)
+      .single();
+      
+    if (!error && data) return data as Product;
+  }
+  
+  // Se não encontrou por SKU ou SKU não fornecido, busca por nome
+  if (name?.trim()) {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('name', name)
+      .single();
+      
+    if (!error && data) return data as Product;
+  }
+  
+  return null;
 };
 
 // Função principal para processar edição em massa
@@ -192,29 +207,33 @@ export const processBulkEdit = async (
     skipped_logs: []
   };
   
-  // Filtrar apenas produtos com SKU válido
-  const validProducts = products.filter(p => p.sku_code?.trim());
+  // Filtrar produtos que tenham SKU ou nome válido
+  const validProducts = products.filter(p => p.sku_code?.trim() || p.name?.trim());
   
   for (let i = 0; i < validProducts.length; i++) {
     const product = validProducts[i];
     const progress = ((i + 1) / validProducts.length) * 100;
-    const rowNumber = products.findIndex(p => p.sku_code === product.sku_code) + 2; // +2 para linha do Excel
+    const identifier = product.sku_code || product.name || 'produto';
+    const rowNumber = products.findIndex(p => 
+      (p.sku_code && p.sku_code === product.sku_code) || 
+      (p.name && p.name === product.name)
+    ) + 2; // +2 para linha do Excel
     
     if (onProgress) {
       onProgress(progress, i + 1, validProducts.length);
     }
     
     try {
-      // Buscar produto existente pelo SKU
-      const existingProduct = await findProductBySku(product.sku_code!);
+      // Buscar produto existente pelo SKU ou nome
+      const existingProduct = await findProductBySkuOrName(product.sku_code, product.name);
       
       if (!existingProduct) {
         result.skipped++;
-        result.details.skipped_skus.push(product.sku_code!);
+        result.details.skipped_skus.push(identifier);
         result.skipped_logs.push({
-          sku_code: product.sku_code!,
+          sku_code: identifier,
           reason: 'Produto não encontrado',
-          details: `O código SKU "${product.sku_code}" não existe no banco de dados`,
+          details: `O produto "${identifier}" não foi encontrado no banco de dados`,
           row: rowNumber
         });
         continue;
@@ -248,6 +267,11 @@ export const processBulkEdit = async (
       }
       if (product.pro_price !== undefined && product.pro_price !== null && String(product.pro_price) !== '') {
         updateData.pro_price = Number(product.pro_price);
+      }
+      
+      // Campo UTI Coins Cashback
+      if (product.uti_coins_cashback_percentage !== undefined && product.uti_coins_cashback_percentage !== null && String(product.uti_coins_cashback_percentage) !== '') {
+        updateData.uti_coins_cashback_percentage = Number(product.uti_coins_cashback_percentage);
       }
       
       // Campos booleanos

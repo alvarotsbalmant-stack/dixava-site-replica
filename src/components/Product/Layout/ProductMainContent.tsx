@@ -223,32 +223,49 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
           </h1>
         </div>
 
-        {/* PREÇOS - ÚNICO E CORRETO */}
-        <div className="space-y-4">
-          <div className="flex items-baseline gap-3">
-            {product.list_price && product.list_price > product.price && (
-              <span className="text-sm text-gray-500 line-through">
-                R$ {product.list_price.toFixed(2).replace('.', ',')}
-              </span>
-            )}
-            <span className="text-2xl font-semibold text-gray-900">
-              R$ {product.price.toFixed(2).replace('.', ',')}
-            </span>
-          </div>
-          
-          {/* Badge de desconto */}
+        {/* PREÇOS - FORMATO REORGANIZADO */}
+        <div>
+          {/* Preço de lista em cima */}
           {product.list_price && product.list_price > product.price && (
-            <div>
-              <Badge className="bg-red-600 text-white">
-                -{Math.round(((product.list_price - product.price) / product.list_price) * 100)}% OFF
-              </Badge>
+            <div className="text-sm text-gray-500 line-through">
+              R$ {product.list_price.toFixed(2).replace(".", ",")}
             </div>
           )}
           
+          {/* Preço normal e desconto na mesma linha */}
+          <div className="flex items-baseline mt-1">
+            <span className="text-2xl font-semibold text-gray-900">
+              R$ {product.price.toFixed(2).replace(".", ",")}
+            </span>
+            {product.list_price && product.list_price > product.price && (
+              <span className="text-green-600 font-bold text-xs ml-2 relative -top-2">
+                {Math.round(((product.list_price - product.price) / product.list_price) * 100)}% OFF
+              </span>
+            )}
+          </div>
+          
           {/* Parcelamento */}
-          <div className="text-sm text-gray-600 space-y-1">
-            <p className="font-medium">12x de R$ {(product.price / 12).toFixed(2).replace('.', ',')} sem juros</p>
+          <div className="text-sm text-gray-600 space-y-1 mt-3">
+            <p className="font-medium">12x de R$ {(product.price / 12).toFixed(2).replace(".", ",")} sem juros</p>
             <p>ou à vista no PIX com <span className="text-green-600 font-medium">5% desconto</span></p>
+          </div>
+
+
+
+          {/* Informações UTI Coins */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 mt-4">
+            <div className="flex items-center gap-2">
+              <img src="/uti-coin.svg" alt="UTI Coin" className="w-6 h-6" />
+              <p className="font-semibold text-yellow-800">
+                Ganhe {Math.round((product.price * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins nesta compra
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <img src="/discount-tag.svg" alt="Discount Tag" className="w-6 h-6" />
+              <p className="text-sm text-yellow-700">
+                Até {product.uti_coins_discount_percentage || 0}% OFF pagando com UTI Coins - Economize até R$ {((product.price * (product.uti_coins_discount_percentage || 0)) / 100).toFixed(2).replace(".", ",")}
+              </p>
+            </div>
           </div>
         </div>
 

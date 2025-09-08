@@ -12,9 +12,8 @@ interface SectionTitleProps {
   titleClassName?: string;
   subtitleClassName?: string;
   alignment?: 'left' | 'center' | 'right';
-  showViewAllButton?: boolean; // Controla se exibe o botão Ver Todos
-  viewAllText?: string; // Texto do botão Ver Todos
-  onViewAllClick?: () => void; // Ação ao clicar no botão Ver Todos
+  onViewAllClick?: () => void; // Função para clique no "Ver Todos"
+  showViewAllButton?: boolean; // Controla se mostra o botão
 }
 
 // Reusable Section Title Component based on GameStop style with bicolor support
@@ -29,9 +28,8 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
   titleClassName,
   subtitleClassName,
   alignment = 'left',
-  showViewAllButton = true,
-  viewAllText = 'Ver Todos',
-  onViewAllClick
+  onViewAllClick,
+  showViewAllButton = true
 }) => {
   // Verifica se deve usar sistema bicolor ou título simples
   const useBicolorTitle = titlePart1 || titlePart2;
@@ -104,7 +102,7 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
             padding: '7px 9px'
           }}
         >
-          {viewAllText}
+          Ver Todos
         </button>
       )}
     </div>

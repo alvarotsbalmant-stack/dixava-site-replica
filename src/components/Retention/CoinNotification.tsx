@@ -56,11 +56,11 @@ export const CoinNotification: React.FC<CoinNotificationProps> = ({
             damping: 30,
             duration: 0.5
           }}
-          className="fixed top-20 right-4 z-[100] w-80 max-w-[calc(100vw-2rem)]"
+          className="fixed top-20 right-4 z-[100] w-56 max-w-[calc(100vw-2rem)]"
         >
           <div className="bg-white border border-amber-200 rounded-lg shadow-lg overflow-hidden">
             {/* Progress bar */}
-            <div className="h-1 bg-amber-100">
+            <div className="h-0.5 bg-amber-100">
               <motion.div
                 className="h-full bg-gradient-to-r from-amber-400 to-orange-400"
                 initial={{ width: "100%" }}
@@ -69,8 +69,8 @@ export const CoinNotification: React.FC<CoinNotificationProps> = ({
               />
             </div>
 
-            <div className="p-4">
-              <div className="flex items-start gap-3">
+            <div className="p-1.5">
+              <div className="flex items-center gap-1.5">
                 {/* Icon with animation */}
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
@@ -79,36 +79,23 @@ export const CoinNotification: React.FC<CoinNotificationProps> = ({
                   className="flex-shrink-0"
                 >
                   <div className="relative">
-                    <Coins className="h-8 w-8 text-amber-500" />
+                    <Coins className="h-3.5 w-3.5 text-amber-500" />
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: [0, 1.2, 1] }}
                       transition={{ delay: 0.4, duration: 0.6 }}
-                      className="absolute -top-1 -right-1"
+                      className="absolute -top-0.5 -right-0.5"
                     >
-                      <CheckCircle className="h-4 w-4 text-green-500 bg-white rounded-full" />
+                      <CheckCircle className="h-1.5 w-1.5 text-green-500 bg-white rounded-full" />
                     </motion.div>
                   </div>
                 </motion.div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-slate-700">
-                      UTI Coins ganhos!
-                    </span>
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: [0, 1.3, 1] }}
-                      transition={{ delay: 0.3, duration: 0.5 }}
-                      className="text-lg font-bold text-amber-600"
-                    >
-                      +{amount}
-                    </motion.span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {reason}
-                  </p>
+                  <span className="text-xs font-medium text-slate-700">
+                    +{amount} UTI Coins
+                  </span>
                 </div>
 
                 {/* Close button */}
@@ -116,47 +103,14 @@ export const CoinNotification: React.FC<CoinNotificationProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600"
+                  className="h-3.5 w-3.5 p-0 text-slate-400 hover:text-slate-600"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-2 w-2" />
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* Floating coins animation */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 pointer-events-none"
-          >
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ 
-                  opacity: 0, 
-                  scale: 0,
-                  x: 20 + i * 10,
-                  y: 20
-                }}
-                animate={{ 
-                  opacity: [0, 1, 0], 
-                  scale: [0, 1, 0.8],
-                  x: 20 + i * 10 + Math.random() * 40 - 20,
-                  y: [20, -30, -60]
-                }}
-                transition={{ 
-                  delay: 0.5 + i * 0.1, 
-                  duration: 2,
-                  ease: "easeOut"
-                }}
-                className="absolute"
-              >
-                <Coins className="h-4 w-4 text-amber-400" />
-              </motion.div>
-            ))}
-          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

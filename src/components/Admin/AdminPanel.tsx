@@ -26,7 +26,7 @@ import { EmailManager } from './EmailManager/EmailManager';
 import OrderVerifier from './OrderVerifier';
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
-import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
+// import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
 import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -236,7 +236,7 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="analytics" className="mt-0">
-                <AnalyticsDashboard />
+                <div className="p-4 text-white">Analytics temporariamente desabilitado</div>
               </TabsContent>
 
               <TabsContent value="uti_coins" className="mt-0">

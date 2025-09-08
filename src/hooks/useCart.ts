@@ -84,8 +84,8 @@ export const useCart = () => {
       });
 
       toast({
-        title: "✅ Produto adicionado!",
-        description: `${product.name} foi adicionado ao carrinho`,
+        title: "✅ Adicionado!",
+        description: `${product.name}`,
         duration: 2000,
         className: "bg-green-50 border-green-200 text-green-800",
       });
@@ -93,7 +93,7 @@ export const useCart = () => {
       console.error('Erro ao adicionar item:', error);
       toast({
         title: "❌ Erro",
-        description: "Erro ao adicionar item ao carrinho",
+        description: "Erro ao adicionar",
         duration: 3000,
         className: "bg-red-50 border-red-200 text-red-800",
       });

@@ -75,18 +75,11 @@ export const useScrollRestoration = () => {
       }, isHomepage ? 300 : 400); // Delay otimizado
 
     } else {
-      // Nova navegação (PUSH ou REPLACE)
-      const isProductPage = currentPathKey.startsWith('/produto/');
-      if (!isProductPage) {
-        console.log(`[ScrollRestoration] ➡️ ${navigationType} detectado para página que NÃO é produto. Indo para topo: ${currentPathKey}`);
-        // Remove qualquer posição salva para o caminho atual, pois é uma nova visita
-        scrollManager.removePosition(currentPathKey);
-        window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-      } else {
-        console.log(`[ScrollRestoration] ➡️ ${navigationType} detectado em página de produto. SEM scroll automático: ${currentPathKey}`);
-        // Para páginas de produto, remove posição mas não força scroll
-        scrollManager.removePosition(currentPathKey);
-      }
+      // Nova navegação (PUSH ou REPLACE) - SEMPRE vai para o topo
+      console.log(`[ScrollRestoration] ➡️ ${navigationType} detectado. Indo para topo: ${currentPathKey}`);
+      // Remove qualquer posição salva para o caminho atual, pois é uma nova visita
+      scrollManager.removePosition(currentPathKey);
+      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
 
     // Atualiza a referência do último caminho *após* o processamento

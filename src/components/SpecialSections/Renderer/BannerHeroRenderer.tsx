@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import type { SpecialSection } from '@/types/specialSections/core';
 
 interface BannerHeroRendererProps {
@@ -12,6 +14,7 @@ export const BannerHeroRenderer: React.FC<BannerHeroRendererProps> = ({
   className = ''
 }) => {
   const config = section.config as any;
+  const isMobile = useIsMobile();
 
   if (!config.imageUrl) {
     return null; // Não renderizar se não houver imagem
@@ -30,13 +33,20 @@ export const BannerHeroRenderer: React.FC<BannerHeroRendererProps> = ({
   return (
     <section className={`relative overflow-hidden rounded-lg ${className}`}>
       {/* Container da imagem */}
-      <div className="relative aspect-video">
+      <div className={cn(
+        "relative",
+        // Proporção diferente para mobile e desktop
+        isMobile ? "aspect-[1102/826]" : "aspect-video"
+      )}>
         <img
           src={config.imageUrl}
           alt={config.imageAlt || section.title}
-          className={`w-full h-full object-cover transition-transform duration-300 ${
+          className={cn(
+            "w-full h-full transition-transform duration-300",
+            // Object-fit diferente para mobile e desktop
+            isMobile ? "object-contain" : "object-cover",
             config.enableHoverAnimation ? 'hover:scale-105' : ''
-          }`}
+          )}
           loading="lazy"
         />
         

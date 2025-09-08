@@ -51,7 +51,7 @@ const HeaderActionsEnhanced = ({
   };
 
   return (
-    <div className="flex items-center space-x-1 sm:space-x-2">
+    <div className="flex items-center space-x-1 sm:space-x-2 pr-4">
       
       {/* User Account / Sign In Button (Desktop Only) */}
       {user ? (

@@ -27,7 +27,7 @@ const SearchResultProductCardImage: React.FC<SearchResultProductCardImageProps> 
   const uniqueId = `search-result-product-image-${product.id}`;
 
   return (
-    <div className="relative w-full overflow-hidden flex items-center justify-center bg-white" style={{ height: '220px' }}>
+    <div className="relative w-full overflow-hidden flex items-center justify-center bg-white h-[120px] sm:h-[130px] md:h-[150px] lg:h-[160px] flex-shrink-0">
       {!imageLoaded && !imageError && (
         <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center">
           <div className="w-20 h-20 bg-gray-200 rounded"></div>
@@ -38,7 +38,7 @@ const SearchResultProductCardImage: React.FC<SearchResultProductCardImageProps> 
         src={product.image || '/placeholder-image.webp'}
         alt={product.name}
         className={cn(
-          "h-full w-full object-contain p-3 transition-transform duration-300 ease-in-out",
+          "h-full w-full object-contain p-2 sm:p-3 transition-transform duration-300 ease-in-out",
           imageLoaded ? "opacity-100" : "opacity-0",
           isHovered ? "scale-105" : "scale-100"
         )}

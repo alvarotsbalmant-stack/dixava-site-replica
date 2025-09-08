@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductSections } from '@/hooks/useProductSections';
@@ -19,6 +19,10 @@ const SectionPage: React.FC = () => {
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sortBy, setSortBy] = useState<'relevance' | 'price_asc' | 'price_desc' | 'name'>('relevance');
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [promotionFilter, setPromotionFilter] = useState('all');
 
   // Hooks para buscar dados
   const { products, loading: productsLoading } = useProducts();
@@ -71,11 +75,57 @@ const SectionPage: React.FC = () => {
     return Array.from(productMap.values());
   }, [currentSection, products]);
 
+  // Aplicar filtros de preço, disponibilidade e promoções
+  const filteredProducts = useMemo(() => {
+    let filtered = [...sectionProducts];
+    
+    // Filtro de preço
+    if (priceRange.min || priceRange.max) {
+      filtered = filtered.filter(product => {
+        const price = product.price;
+        const min = priceRange.min ? parseFloat(priceRange.min) : 0;
+        const max = priceRange.max ? parseFloat(priceRange.max) : Infinity;
+        return price >= min && price <= max;
+      });
+    }
+    
+    // Filtro de disponibilidade
+    if (availabilityFilter !== 'all') {
+      filtered = filtered.filter(product => {
+        if (availabilityFilter === 'in_stock') {
+          return product.stock > 0;
+        } else if (availabilityFilter === 'out_of_stock') {
+          return product.stock === 0;
+        }
+        return true;
+      });
+    }
+    
+    // Filtro de promoções
+    if (promotionFilter !== 'all') {
+      filtered = filtered.filter(product => {
+        if (promotionFilter === 'on_sale') {
+          return product.list_price && product.list_price > product.price;
+        } else if (promotionFilter === 'featured') {
+          return product.is_featured;
+        } else if (promotionFilter === 'new') {
+          // Considerar produtos criados nos últimos 30 dias como novos
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return new Date(product.created_at || '') > thirtyDaysAgo;
+        }
+        return true;
+      });
+    }
+    
+    return filtered;
+  }, [sectionProducts, priceRange, availabilityFilter, promotionFilter]);
+
   // Ordenar produtos
   const sortedProducts = useMemo(() => {
-    if (!sectionProducts) return [];
+    if (!filteredProducts) return [];
     
-    const sorted = [...sectionProducts];
+    const sorted = [...filteredProducts];
     
     switch (sortBy) {
       case 'price_asc':
@@ -88,7 +138,7 @@ const SectionPage: React.FC = () => {
       default:
         return sorted;
     }
-  }, [sectionProducts, sortBy]);
+  }, [filteredProducts, sortBy]);
 
   // Handlers
   const handleAddToCart = (product: any, size?: string, color?: string) => {
@@ -114,8 +164,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartToggle}
-          onAuthClick={handleAuthModalToggle}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -135,8 +185,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartToggle}
-          onAuthClick={handleAuthModalToggle}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -171,6 +221,19 @@ const SectionPage: React.FC = () => {
 
       {/* Conteúdo principal */}
       <main className="container mx-auto px-4 py-6">
+        {/* Botão de voltar */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="text-sm font-medium">Voltar para Home</span>
+          </button>
+        </div>
+
         {/* Título da seção */}
         <div className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
@@ -181,21 +244,116 @@ const SectionPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Filtros e ordenação */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-white rounded-lg shadow-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Ordenar:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+        {/* Filtros e ordenação profissionais */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Ordenar:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="relevance">Melhores Resultados</option>
+                <option value="price_asc">Menor Preço</option>
+                <option value="price_desc">Maior Preço</option>
+                <option value="name">Nome A-Z</option>
+              </select>
+            </div>
+            
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              <option value="relevance">Melhores Resultados</option>
-              <option value="price_asc">Menor Preço</option>
-              <option value="price_desc">Maior Preço</option>
-              <option value="name">Nome A-Z</option>
-            </select>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+              </svg>
+              Filtros
+            </button>
           </div>
+          
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+              {/* Filtro de Preço */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Faixa de Preço
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Mín"
+                    value={priceRange.min}
+                    onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                  <span className="text-gray-500 self-center">até</span>
+                  <input
+                    type="number"
+                    placeholder="Máx"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+              </div>
+              
+              {/* Filtro de Disponibilidade */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Disponibilidade
+                </label>
+                <select
+                  value={availabilityFilter}
+                  onChange={(e) => setAvailabilityFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="all">Todos</option>
+                  <option value="in_stock">Em Estoque</option>
+                  <option value="out_of_stock">Fora de Estoque</option>
+                </select>
+              </div>
+              
+              {/* Filtro de Promoções */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Promoções
+                </label>
+                <select
+                  value={promotionFilter}
+                  onChange={(e) => setPromotionFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="all">Todos</option>
+                  <option value="on_sale">Em Promoção</option>
+                  <option value="featured">Produtos em Destaque</option>
+                  <option value="new">Novos Produtos</option>
+                </select>
+              </div>
+              
+              {/* Botões de Ação */}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    // Aplicar filtros (já aplicados automaticamente via useMemo)
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                >
+                  Aplicar Filtros
+                </button>
+                <button
+                  onClick={() => {
+                    setPriceRange({ min: '', max: '' });
+                    setAvailabilityFilter('all');
+                    setPromotionFilter('all');
+                  }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Limpar Tudo
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Grid de produtos */}
@@ -211,8 +369,7 @@ const SectionPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {sortedProducts.map((product) => (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">{sortedProducts.map((product) => (
               <SearchResultProductCard
                 key={product.id}
                 product={product}

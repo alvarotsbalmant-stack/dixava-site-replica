@@ -15,6 +15,8 @@ export interface Product {
   discount_percentage?: number;
   pix_discount_percentage?: number;
   uti_pro_price?: number;
+
+
   installment_options?: number;
   image: string;
   image_url?: string; // Added for backward compatibility
@@ -110,6 +112,10 @@ export interface Product {
   uti_pro_type?: 'percentage' | 'fixed';
   uti_pro_value?: number;
   uti_pro_custom_price?: number;
+
+  // Campos UTI Coins
+  uti_coins_cashback_percentage?: number;
+  uti_coins_discount_percentage?: number;
 }
 
 // Tipos específicos para SKUs

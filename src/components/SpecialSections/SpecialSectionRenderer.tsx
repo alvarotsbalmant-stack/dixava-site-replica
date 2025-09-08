@@ -74,6 +74,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
           config={carouselConfig}
           sectionBackgroundColor={section.background_value || '#f3f4f6'} // Passa cor de fundo da seção
           onCardClick={onProductCardClick}
+          sectionId={section.id} // Passa o ID da seção especial
         />
       </div>
     );

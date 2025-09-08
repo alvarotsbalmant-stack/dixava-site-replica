@@ -33,17 +33,28 @@ export const useSiteSettings = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
-  const loadSettings = async () => {
+  const loadSettings = async (retryCount = 0) => {
     try {
-      const { data, error } = await supabase
+      console.log('🔧 [useSiteSettings] Carregando configurações do site...');
+      
+      // Timeout de 5 segundos para evitar travamento
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout ao carregar configurações')), 5000)
+      );
+      
+      const dataPromise = supabase
         .from('site_settings')
         .select('setting_key, setting_value')
         .in('setting_key', ['site_info', 'uti_pro_settings']);
 
+      const { data, error } = await Promise.race([dataPromise, timeoutPromise]) as any;
+
       if (error) throw error;
 
       if (data) {
+        console.log('✅ [useSiteSettings] Configurações carregadas com sucesso');
         data.forEach((setting) => {
           if (setting.setting_key === 'site_info') {
             setSiteInfo(setting.setting_value as unknown as SiteInfo);
@@ -51,11 +62,25 @@ export const useSiteSettings = () => {
             setUtiProSettings(setting.setting_value as unknown as UTIProSettings);
           }
         });
+        setHasError(false);
       }
     } catch (error) {
-      console.error('Erro ao carregar configurações:', error);
+      console.error('❌ [useSiteSettings] Erro ao carregar configurações:', error);
+      
+      // Retry até 2 vezes com delay
+      if (retryCount < 2) {
+        console.log(`🔄 [useSiteSettings] Tentativa ${retryCount + 1}/3 em 2 segundos...`);
+        setTimeout(() => loadSettings(retryCount + 1), 2000);
+        return; // Não finalizar loading ainda
+      } else {
+        console.log('⚠️ [useSiteSettings] Usando configurações padrão após falhas');
+        setHasError(true);
+      }
     } finally {
-      setLoading(false);
+      // Finalizar loading após primeira tentativa ou após todas as tentativas
+      if (retryCount === 0 || retryCount >= 2) {
+        setLoading(false);
+      }
     }
   };
 
@@ -114,6 +139,7 @@ export const useSiteSettings = () => {
     siteInfo,
     utiProSettings,
     loading,
+    hasError,
     updateSiteInfo,
     updateUTIProSettings,
     refreshSettings: loadSettings

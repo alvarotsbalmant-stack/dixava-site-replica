@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUTICoins } from './useUTICoins';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +12,26 @@ export const useScrollCoins = () => {
   const scrollDistance = useRef<number>(0);
   const lastScrollY = useRef<number>(0);
   const isEarning = useRef<boolean>(false);
+  
+  // Estado local para notificação
+  const [notification, setNotification] = useState({
+    isVisible: false,
+    amount: 0
+  });
+
+  const showNotification = (amount: number) => {
+    setNotification({
+      isVisible: true,
+      amount
+    });
+  };
+
+  const hideNotification = () => {
+    setNotification(prev => ({
+      ...prev,
+      isVisible: false
+    }));
+  };
 
   useEffect(() => {
     // Só funcionar se o usuário estiver logado e o sistema estiver habilitado
@@ -38,11 +58,8 @@ export const useScrollCoins = () => {
           const result = await earnScrollCoins();
           
           if (result?.success) {
-            toast({
-              title: '🪙 UTI Coins ganhas!',
-              description: `Você ganhou ${result.amount} moedas por explorar o site!`,
-              duration: 3000,
-            });
+            // Usar notificação customizada em vez do toast
+            showNotification(result.amount);
           } else if (result?.rateLimited) {
             // Backend controlou o timing - não mostrar erro
             console.log('[SCROLL] Backend timing control:', result.message);
@@ -82,4 +99,9 @@ export const useScrollCoins = () => {
       window.removeEventListener('scroll', throttledScroll);
     };
   }, [user, earnScrollCoins, toast, isEnabled]);
+
+  return {
+    notification,
+    hideNotification
+  };
 };

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
@@ -25,13 +26,16 @@ interface SpecialCarouselRowProps {
   config: CarouselRowConfig;
   sectionBackgroundColor?: string; // Cor de fundo da seção para gradiente adaptativo
   onCardClick?: (productId: string) => void;
+  sectionId?: string; // ID da seção especial para navegação
 }
 
 const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
   config,
   sectionBackgroundColor = '#f3f4f6', // Default para cinza claro
   onCardClick,
+  sectionId, // ID da seção especial
 }) => {
+  const navigate = useNavigate();
   // Gera chave única e estável para o carrossel especial
   const generateCarouselKey = () => {
     const titlePart = config.title || `${config.titlePart1 || ''}_${config.titlePart2 || ''}`;
@@ -216,18 +220,28 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
         </div>
         
         {/* Botão Shop All estilo GameStop */}
-        <button className="rounded font-semibold transition-colors duration-200 flex-shrink-0 ml-4 flex items-center justify-center" style={{ 
-          backgroundColor: config.view_all_button_bg_color || '#1f2937',
-          color: config.view_all_button_text_color || '#ffffff',
-          border: `2px solid ${config.view_all_button_bg_color || '#1f2937'}`,
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          lineHeight: '1',
-          height: '40px',
-          minWidth: '78px',
-          padding: '7px 9px'
-        }}>
+        <button 
+          onClick={() => {
+            if (sectionId) {
+              const link = `/secao/special_section_${sectionId}`;
+              console.log(`[SpecialCarouselRow] Navegando para: ${link}`);
+              navigate(link);
+            }
+          }}
+          className="rounded font-semibold transition-colors duration-200 flex-shrink-0 ml-4 flex items-center justify-center" 
+          style={{ 
+            backgroundColor: config.view_all_button_bg_color || '#1f2937',
+            color: config.view_all_button_text_color || '#ffffff',
+            border: `2px solid ${config.view_all_button_bg_color || '#1f2937'}`,
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            lineHeight: '1',
+            height: '40px',
+            minWidth: '78px',
+            padding: '7px 9px'
+          }}
+        >
           Ver Todos
         </button>
       </div>

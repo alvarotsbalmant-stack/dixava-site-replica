@@ -188,13 +188,16 @@ const ProductSectionsMobileMercadoLivre: React.FC<ProductSectionsMobileMercadoLi
             {product.description || 'Baralho Batalha de Liga Pokémon Gardevoir ex Mew ex Greninja Radiante Lumineon V Copag\n\nTenha o poder da mente em suas mãos!\n\nContendo 6 cartas ultra raras, dentre elas a de Mew ex, você será capaz de duelar com um baralho com cartas especialmente designadas para as mais épicas batalhas! Através da habilidade de Gardevoir ex, carregue seus Pokémons. Lumineon V, além de um poderoso ataque, será responsável por trazer um Apoiador à sua mão!\n\nEscolha um dos ataques do Pokémon do seu oponente como um próprio ataque com Mew ex e utilize com sabedoria a habilidade de Greninja Radiante, que proporciona a compra de mais duas cartas durante o seu turno. Com esse engenhoso deck você será capaz de combates e vitórias inesquecíveis!'}
           </div>
         </div>
-        <Button
-          variant="ghost"
-          onClick={() => setShowFullDescription(!showFullDescription)}
-          className="text-blue-600 p-0 h-auto mt-2"
-        >
-          {showFullDescription ? 'Ver menos' : 'Ver descrição completa'}
-        </Button>
+        {/* 🔧 CORREÇÃO: Só mostrar botão se descrição for longa (mais de 200 caracteres) */}
+        {(product.description || 'Baralho Batalha de Liga Pokémon Gardevoir ex Mew ex Greninja Radiante Lumineon V Copag\n\nTenha o poder da mente em suas mãos!\n\nContendo 6 cartas ultra raras, dentre elas a de Mew ex, você será capaz de duelar com um baralho com cartas especialmente designadas para as mais épicas batalhas! Através da habilidade de Gardevoir ex, carregue seus Pokémons. Lumineon V, além de um poderoso ataque, será responsável por trazer um Apoiador à sua mão!\n\nEscolha um dos ataques do Pokémon do seu oponente como um próprio ataque com Mew ex e utilize com sabedoria a habilidade de Greninja Radiante, que proporciona a compra de mais duas cartas durante o seu turno. Com esse engenhoso deck você será capaz de combates e vitórias inesquecíveis!').length > 200 && (
+          <Button
+            variant="ghost"
+            onClick={() => setShowFullDescription(!showFullDescription)}
+            className="text-blue-600 p-0 h-auto mt-2"
+          >
+            {showFullDescription ? 'Ver menos' : 'Ver descrição completa'}
+          </Button>
+        )}
       </div>
 
       {/* Meios de pagamento */}

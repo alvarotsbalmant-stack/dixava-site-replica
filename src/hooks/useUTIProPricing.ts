@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Product } from '@/hooks/useProducts/types';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettingsOptimized } from '@/hooks/useSiteSettingsOptimized';
 
 export interface UTIProPricing {
   isEnabled: boolean;
@@ -12,7 +12,7 @@ export interface UTIProPricing {
 
 export const useUTIProPricing = (product: Product): UTIProPricing => {
   const { hasActiveSubscription } = useSubscriptions();
-  const { utiProSettings, loading } = useSiteSettings();
+  const { utiProSettings, loading } = useSiteSettingsOptimized();
   const isUserPro = hasActiveSubscription();
 
   return useMemo(() => {

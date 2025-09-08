@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProductPage, useProductsEnhanced } from '@/hooks/useProductsEnhanced';
+import { useProductCache, useRelatedProducts } from '@/hooks/useProductCache';
 import { useProductSyncEvents } from '@/utils/productSyncEvents';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,13 @@ import Cart from '@/components/Cart';
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, loading: productsLoading, refreshProducts } = useProductsEnhanced();
+  
+  // Usar novo sistema de cache unificado
+  const { product, loading: productLoading, error: productError, fromCache, retry } = useProductCache(id || '');
+  
+  // Usar hook especializado para produtos relacionados (substitui over-fetching)
+  const { relatedProducts, loading: relatedLoading } = useRelatedProducts(product, 4);
+  
   const { on } = useProductSyncEvents();
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { user } = useAuth();
@@ -28,27 +34,19 @@ const ProductPage: React.FC = () => {
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const product = products.find(p => p.id === id);
-  const relatedProducts = products.filter(p => 
-    p.id !== id && 
-    (p.category === product?.category || p.platform === product?.platform)
-  ).slice(0, 4);
+  // Log para debug do cache
+  useEffect(() => {
+    if (product) {
+      console.log(`🚀 Produto ${product.id} carregado ${fromCache ? 'do CACHE' : 'da API'}`);
+    }
+  }, [product, fromCache]);
 
   // Removido o scroll forçado para permitir restauração de posição
 
-  // Sistema de sincronização em tempo real
+  // Sistema de sincronização em tempo real (simplificado)
   useEffect(() => {
     console.log('[ProductPage] Configurando listeners de sincronização para produto:', id);
     
-    // Listener para atualizações específicas do produto atual
-    const unsubscribeProductUpdated = on('product_updated', (event) => {
-      if (event.productId === id) {
-        console.log('[ProductPage] Produto atual foi atualizado no admin, atualizando página');
-        toast.info('Produto atualizado! Recarregando dados...');
-        refreshProducts();
-      }
-    });
-
     // Listener para quando o produto atual é deletado
     const unsubscribeProductDeleted = on('product_deleted', (event) => {
       if (event.productId === id) {
@@ -58,34 +56,12 @@ const ProductPage: React.FC = () => {
       }
     });
 
-    // Listener para ações administrativas completadas
-    const unsubscribeAdminActions = on('admin_action_completed', (event) => {
-      if (event.productId === id) {
-        console.log('[ProductPage] Ação administrativa completada para produto atual');
-        // Pequeno delay para garantir que os dados estão atualizados
-        setTimeout(() => {
-          refreshProducts();
-        }, 200);
-      }
-    });
-
-    // Listener para refresh geral de produtos
-    const unsubscribeProductsRefreshed = on('products_refreshed', (event) => {
-      if (event.source === 'admin') {
-        console.log('[ProductPage] Produtos atualizados pelo admin, sincronizando');
-        refreshProducts();
-      }
-    });
-
     // Cleanup dos listeners
     return () => {
-      unsubscribeProductUpdated();
       unsubscribeProductDeleted();
-      unsubscribeAdminActions();
-      unsubscribeProductsRefreshed();
       console.log('[ProductPage] Listeners de sincronização removidos');
     };
-  }, [id, on, refreshProducts, navigate]);
+  }, [id, on, navigate]);
 
   const handleAddToCart = () => {
     if (product) {
@@ -106,7 +82,7 @@ const ProductPage: React.FC = () => {
   const handleCartOpen = () => setShowCart(true);
   const handleAuthOpen = () => setShowAuthModal(true);
 
-  if (productsLoading) {
+  if (productLoading) {
     return (
       <>
         <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
@@ -131,6 +107,36 @@ const ProductPage: React.FC = () => {
                     <div className="h-4 bg-gray-200 rounded w-5/6"></div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Indicador de cache */}
+        {fromCache && (
+          <div className="fixed bottom-4 right-4 bg-green-500 text-white px-3 py-1 rounded text-sm">
+            ⚡ Carregado do cache
+          </div>
+        )}
+      </>
+    );
+  }
+
+  if (!product && productError) {
+    return (
+      <>
+        <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-4">
+              <h1 className="text-xl font-bold text-red-800 mb-2">Erro ao carregar produto</h1>
+              <p className="text-red-600 mb-4">{productError}</p>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={retry} variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
+                  Tentar novamente
+                </Button>
+                <Button onClick={() => navigate('/')} variant="outline">
+                  Voltar ao início
+                </Button>
               </div>
             </div>
           </div>
@@ -543,6 +549,13 @@ const ProductPage: React.FC = () => {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+      
+      {/* Indicador de Cache */}
+      {fromCache && product && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg text-sm font-medium z-50">
+          ⚡ Carregado do cache
+        </div>
+      )}
     </>
   );
 };

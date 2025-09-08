@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import DeliveryInfo from '../Sidebar/DeliveryInfo';
 import QuantitySelector from '../Sidebar/QuantitySelector';
 import ActionButtons from '../Sidebar/ActionButtons';
-import UTICoinsInfo from '../Sidebar/UTICoinsInfo';
+
 import TrustBadges from '../Sidebar/TrustBadges';
 import DynamicDelivery from '../Sidebar/DynamicDelivery';
 
@@ -89,11 +89,7 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
 
       {/* ===== SEÇÃO SECUNDÁRIA ABAIXO ===== */}
 
-      {/* UTI COINS */}
-      <UTICoinsInfo 
-        product={product}
-        quantity={quantity}
-      />
+
 
       {/* GARANTIAS E SEGURANÇA */}
       <div className="space-y-3">

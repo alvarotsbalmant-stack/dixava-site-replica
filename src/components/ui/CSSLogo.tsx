@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettingsOptimized } from '@/hooks/useSiteSettingsOptimized';
 
 interface CSSLogoProps {
   className?: string;
@@ -10,7 +10,7 @@ export const CSSLogo: React.FC<CSSLogoProps> = ({
   className = '', 
   size = 'md' 
 }) => {
-  const { siteInfo } = useSiteSettings();
+  const { siteInfo } = useSiteSettingsOptimized();
   
   // Separar o nome do site em primeira palavra (vermelha) e resto (preto)
   const words = siteInfo.siteName.split(' ');

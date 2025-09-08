@@ -85,6 +85,12 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
+  // UTI Coins Cashback
+  uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
+  
+  // UTI Coins Desconto
+  uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
+  
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
   updated_at: row.updated_at || new Date().toISOString()

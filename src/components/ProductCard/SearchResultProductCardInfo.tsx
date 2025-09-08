@@ -136,40 +136,42 @@ const SearchResultProductCardInfo: React.FC<SearchResultProductCardInfoProps> = 
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1 min-h-[4rem] flex flex-col">
       {/* Título do produto */}
       <h3
         className={cn(
-          "font-sans text-base font-medium leading-tight text-gray-900 text-left",
+          "font-sans text-xs sm:text-sm md:text-base font-medium leading-tight text-gray-900 text-left",
           "line-clamp-2",
-          "min-h-[3rem]" // Altura um pouco maior para texto maior
+          "flex-shrink-0 mb-1" // Removendo altura fixa e adicionando margem
         )}
         title={product.name}
       >
         {product.name}
       </h3>
 
-      {/* Tags informativas */}
-      <div className="flex flex-wrap gap-1.5">
-        {platform && (
-          <span className={cn(
-            "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
-            getPlatformColor(platform)
-          )}>
-            {platform}
+      {/* Tags informativas - responsivas para todas as resoluções */}
+      <div className="flex-1 flex items-start pt-1">
+        <div className="flex flex-wrap gap-1 w-full">
+          {platform && (
+            <span className={cn(
+              "inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0",
+              getPlatformColor(platform)
+            )}>
+              {platform}
+            </span>
+          )}
+          
+          <span className="inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap flex-shrink-0">
+            {category}
           </span>
-        )}
-        
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-          {category}
-        </span>
-        
-        <span className={cn(
-          "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
-          getStatusColor(status)
-        )}>
-          {status}
-        </span>
+          
+          <span className={cn(
+            "inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0",
+            getStatusColor(status)
+          )}>
+            {status}
+          </span>
+        </div>
       </div>
     </div>
   );

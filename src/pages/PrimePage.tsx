@@ -67,7 +67,11 @@ const PrimePage: React.FC = () => {
   };
 
   const handleCartToggle = () => {
-    setShowCart(!showCart);
+    console.log('[PrimePage] handleCartToggle called');
+    setShowCart(prev => {
+      console.log('[PrimePage] Setting showCart to:', !prev);
+      return !prev;
+    });
   };
 
   const handleAuthModalToggle = () => {
@@ -84,8 +88,8 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartToggle}
-          onAuthClick={handleAuthModalToggle}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
         />
         <div className="container mx-auto px-4 py-8">
           <ErrorState 
@@ -115,8 +119,8 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartToggle}
-          onAuthClick={handleAuthModalToggle}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
         />
         <LoadingState />
         <Footer />
@@ -131,8 +135,8 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartToggle}
-          onAuthClick={handleAuthModalToggle}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
         />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-16">
@@ -157,8 +161,8 @@ const PrimePage: React.FC = () => {
       <ProfessionalHeader
         user={user}
         cartItemsCount={getCartItemsCount()}
-        onCartClick={handleCartToggle}
-        onAuthClick={handleAuthModalToggle}
+        onCartOpen={handleCartToggle}
+        onAuthOpen={handleAuthModalToggle}
       />
 
       {/* Conteúdo principal */}

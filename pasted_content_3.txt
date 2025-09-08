@@ -1,0 +1,64 @@
+Entendi perfeitamente! Vou analisar o código atual para entender melhor como implementar essa integração e te dar todas as informações necessárias para a outra IA.
+
+Perfeito! Entendi exatamente o que precisa ser feito. Vou te explicar tudo que entendi e dar as informações completas para a outra IA implementar:
+
+## O que entendi:
+
+1. **Substituir o componente atual** `UTICoinsInfo` (primeiro print) por uma integração direta na seção de preços
+2. **Layout de preços profissional** seguindo o segundo print: preço riscado em cima, preço real embaixo, % OFF ao lado
+3. **Informações UTI Coins** embaixo dos preços:
+   - Cashback: quantidade EXATA de coins que ganha (não porcentagem)
+   - Desconto: porcentagem disponível para usar UTI Coins na compra
+4. **Dados reais do banco** usando os campos que já existem no produto
+
+## Informações técnicas para a outra IA:
+
+### 1. Campos do banco de dados já disponíveis no produto:
+```typescript
+// No tipo Product (src/hooks/useProducts/types.ts)
+uti_coins_cashback_percentage?: number; // Porcentagem de cashback em UTI Coins
+uti_coins_discount_percentage?: number; // Porcentagem de desconto em UTI Coins
+```
+
+### 2. Arquivo principal a modificar:
+**`src/components/Product/Sidebar/ProductPricingCompact.tsx`** - É esse o componente que controla a seção de preços no desktop
+
+### 3. Estrutura atual do ProductSidebar:
+O `ProductSidebar.tsx` atualmente importa o `UTICoinsInfo` na linha 93-96, que deve ser **removido** e a funcionalidade integrada diretamente no `ProductPricingCompact.tsx`
+
+### 4. Cálculos necessários:
+```typescript
+// Para calcular coins exatos de cashback (não porcentagem):
+const coinsEarned = Math.floor((product.price * (product.uti_coins_cashback_percentage || 0)) / 100 * 100);
+// Explicação: (preço × porcentagem ÷ 100) × 100 coins por real
+
+// Para desconto máximo em reais:
+const maxDiscount = (product.price * (product.uti_coins_discount_percentage || 0)) / 100;
+```
+
+### 5. Layout desejado (baseado nos prints):
+```
+[PREÇO RISCADO]     [X% OFF]
+[PREÇO REAL]
+
+💰 Ganhe X UTI Coins nesta compra
+🎯 Até Y% OFF pagando com UTI Coins - Economize até R$ Z
+```
+
+### 6. Hook de UTI Coins existente (se precisar do saldo do usuário):
+```typescript
+import { useUTICoins } from '@/hooks/useUTICoins';
+const { balance } = useUTICoins(); // Saldo atual do usuário
+```
+
+### 7. Remoção necessária:
+- **Remover** a importação e uso do `UTICoinsInfo` do `ProductSidebar.tsx`
+- **Integrar** toda funcionalidade diretamente no `ProductPricingCompact.tsx`
+
+### 8. Exemplo de estrutura do componente modificado:
+O `ProductPricingCompact.tsx` já tem a estrutura base de preços, só precisa:
+- Adicionar os cálculos UTI Coins
+- Inserir a seção de cashback/desconto após a seção de preços atual
+- Usar styling profissional similar ao que já existe no arquivo
+
+Essa é toda informação que a outra IA precisa para implementar perfeitamente a funcionalidade seguindo exatamente o que você quer!

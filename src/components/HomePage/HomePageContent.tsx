@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Product } from '@/hooks/useProducts';
+import { CachedProduct } from '@/utils/ProductCacheManager';
 import { ProductSection, HomepageLayoutItem } from '@/hooks/useProductSections';
 import SectionRenderer from './SectionRenderer';
 import ErrorState from './ErrorState';
@@ -8,7 +8,7 @@ import LoadingState from './LoadingState';
 
 interface HomePageContentProps {
   layoutItems: HomepageLayoutItem[];
-  products: Product[];
+  products: CachedProduct[];
   sections: ProductSection[];
   bannerData: {
     imageUrl: string;

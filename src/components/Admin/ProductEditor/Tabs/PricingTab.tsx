@@ -36,6 +36,16 @@ const PricingTab: React.FC<PricingTabProps> = ({ formData, onChange }) => {
     return basePrice * (1 - pixDiscount / 100);
   };
 
+  const calculateCashbackAmount = () => {
+    if (!formData.price || !formData.uti_coins_cashback_percentage) return 0;
+    return (formData.price * formData.uti_coins_cashback_percentage) / 100;
+  };
+
+  const calculateCashbackCoins = () => {
+    const cashbackAmount = calculateCashbackAmount();
+    return Math.round(cashbackAmount * 100); // 1 real = 100 UTI Coins
+  };
+
   return (
     <div className="space-y-6">
       {/* Preços básicos */}
@@ -138,6 +148,68 @@ const PricingTab: React.FC<PricingTabProps> = ({ formData, onChange }) => {
               </p>
             </div>
           </div>
+
+          {/* UTI Coins Cashback */}
+          <div>
+            <Label htmlFor="uti_coins_cashback_percentage">Cashback UTI Coins (%)</Label>
+            <Input
+              id="uti_coins_cashback_percentage"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={formData.uti_coins_cashback_percentage || ''}
+              onChange={(e) => onChange('uti_coins_cashback_percentage', parseFloat(e.target.value) || undefined)}
+              placeholder="0.0"
+            />
+            <div className="text-sm text-gray-500 mt-1 space-y-1">
+              <p>Porcentagem de cashback em UTI Coins que o cliente receberá</p>
+              {formData.price && formData.uti_coins_cashback_percentage && (
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 p-2 rounded border border-amber-200 dark:border-amber-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-xs">U</span>
+                    </div>
+                    <span className="text-amber-800 dark:text-amber-200 font-medium">
+                      Cliente receberá {calculateCashbackCoins().toLocaleString()} UTI Coins 
+                      ({formatCurrency(calculateCashbackAmount())})
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* UTI Coins Desconto */}
+          <div>
+            <Label htmlFor="uti_coins_discount_percentage">Desconto UTI Coins (%)</Label>
+            <Input
+              id="uti_coins_discount_percentage"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={formData.uti_coins_discount_percentage || ''}
+              onChange={(e) => onChange('uti_coins_discount_percentage', parseFloat(e.target.value) || undefined)}
+              placeholder="0.0"
+            />
+            <div className="text-sm text-gray-500 mt-1 space-y-1">
+              <p>Porcentagem máxima de desconto que pode ser aplicada com UTI Coins</p>
+              {formData.price && formData.uti_coins_discount_percentage && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-2 rounded border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-xs">U</span>
+                    </div>
+                    <span className="text-blue-800 dark:text-blue-200 font-medium">
+                      Desconto máximo: {formatCurrency((formData.price * formData.uti_coins_discount_percentage) / 100)} 
+                      ({Math.round((formData.price * formData.uti_coins_discount_percentage))} UTI Coins)
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -191,12 +263,32 @@ const PricingTab: React.FC<PricingTabProps> = ({ formData, onChange }) => {
               </span>
             </div>
 
+            {/* Cashback UTI Coins Preview */}
+            {formData.uti_coins_cashback_percentage && formData.uti_coins_cashback_percentage > 0 && (
+              <div className="flex justify-between items-center bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 p-3 rounded border border-amber-200 dark:border-amber-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">U</span>
+                  </div>
+                  <span className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                    Cashback UTI Coins ({formData.uti_coins_cashback_percentage}%):
+                  </span>
+                </div>
+                <span className="text-lg font-bold text-amber-800 dark:text-amber-100">
+                  {calculateCashbackCoins().toLocaleString()} moedas
+                </span>
+              </div>
+            )}
+
             {formData.price > 0 && (
               <div className="pt-2 border-t">
                 <div className="text-xs text-gray-500">
                   <p>• Parcelamento: até 12x de {formatCurrency((formData.price || 0) / 12)}</p>
                   <p>• Economia UTI Pro: {formatCurrency((formData.price || 0) - calculateProPrice())}</p>
                   <p>• Economia PIX: {formatCurrency(calculateDiscountedPrice() - calculatePixPrice())}</p>
+                  {formData.uti_coins_cashback_percentage && formData.uti_coins_cashback_percentage > 0 && (
+                    <p>• Cashback UTI Coins: {calculateCashbackCoins().toLocaleString()} moedas ({formatCurrency(calculateCashbackAmount())})</p>
+                  )}
                 </div>
               </div>
             )}

@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Product } from './useProducts/types';
 import { 
   fetchProductsFromDatabase, 
@@ -95,21 +96,87 @@ export const useProducts = () => {
 
   const updateProduct = async (id: string, updates: Partial<Product> & { tagIds?: string[] }) => {
     try {
-      const result = await updateProductInDatabase(id, updates);
-      await fetchProducts(); // Recarregar para obter as tags atualizadas
+      console.log('🔄 [useProducts.updateProduct] NOVO SISTEMA DIRETO');
+      console.log('🔄 [useProducts.updateProduct] ID:', id);
+      console.log('🔄 [useProducts.updateProduct] Updates:', updates);
+      
+      // Preparar dados para update (igual ao bulk edit)
+      const updateData: any = {};
+      
+      // Campos básicos
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.price !== undefined) updateData.price = Number(updates.price);
+      if (updates.list_price !== undefined) updateData.list_price = Number(updates.list_price);
+      if (updates.pro_price !== undefined) updateData.pro_price = Number(updates.pro_price);
+      if (updates.stock !== undefined) updateData.stock = Number(updates.stock);
+      
+      // Campo UTI Coins Cashback (igual ao bulk edit)
+      if (updates.uti_coins_cashback_percentage !== undefined) {
+        updateData.uti_coins_cashback_percentage = Number(updates.uti_coins_cashback_percentage);
+      }
+      
+      // Campo UTI Coins Desconto (igual ao bulk edit)
+      if (updates.uti_coins_discount_percentage !== undefined) {
+        updateData.uti_coins_discount_percentage = Number(updates.uti_coins_discount_percentage);
+      }
+      
+      // Campos booleanos
+      if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+      if (updates.is_featured !== undefined) updateData.is_featured = updates.is_featured;
+      if (updates.badge_visible !== undefined) updateData.badge_visible = updates.badge_visible;
+      if (updates.free_shipping !== undefined) updateData.free_shipping = updates.free_shipping;
+      
+      // Campos de texto
+      if (updates.image !== undefined) updateData.image = updates.image;
+      if (updates.badge_text !== undefined) updateData.badge_text = updates.badge_text;
+      if (updates.badge_color !== undefined) updateData.badge_color = updates.badge_color;
+      if (updates.sku_code !== undefined) updateData.sku_code = updates.sku_code;
+      
+      // Campos JSON
+      if (updates.additional_images !== undefined) updateData.additional_images = updates.additional_images;
+      if (updates.colors !== undefined) updateData.colors = updates.colors;
+      if (updates.sizes !== undefined) updateData.sizes = updates.sizes;
+      if (updates.specifications !== undefined) updateData.specifications = updates.specifications;
+      if (updates.technical_specs !== undefined) updateData.technical_specs = updates.technical_specs;
+      if (updates.product_features !== undefined) updateData.product_features = updates.product_features;
+      
+      // Sempre atualizar timestamp
+      updateData.updated_at = new Date().toISOString();
+      
+      console.log('📊 [useProducts.updateProduct] Dados para update:', updateData);
+      
+      // UPDATE DIRETO no Supabase (igual ao bulk edit)
+      const { data, error } = await supabase
+        .from('products')
+        .update(updateData)
+        .eq('id', id)
+        .select('*')
+        .single();
+        
+      if (error) {
+        console.error('❌ [useProducts.updateProduct] Erro no update:', error);
+        throw error;
+      }
+      
+      console.log('✅ [useProducts.updateProduct] Produto atualizado:', data);
+      
+      // Recarregar produtos
+      await fetchProducts();
+      
       toast({
         title: "Produto atualizado com sucesso!",
+        description: "Todas as alterações foram salvas.",
       });
-      return result;
+      
+      return data;
     } catch (error: any) {
-      const errorMessage = handleProductError(error, 'ao atualizar produto');
-      if (errorMessage) {
-        toast({
-          title: "Erro ao atualizar produto",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
+      console.error('❌ [useProducts.updateProduct] Erro geral:', error);
+      toast({
+        title: "Erro ao atualizar produto",
+        description: error.message || "Erro desconhecido",
+        variant: "destructive",
+      });
       throw error;
     }
   };

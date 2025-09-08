@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettingsOptimized } from '@/hooks/useSiteSettingsOptimized';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 import { CSSLogo } from '@/components/ui/CSSLogo';
 import { useUIState } from '@/contexts/UIStateContext';
@@ -29,8 +29,11 @@ const MainHeader = ({
 }: MainHeaderProps) => {
   const location = useLocation();
   const { isMobileSearchOpen, setIsMobileSearchOpen } = useUIState();
-  const { siteInfo, loading } = useSiteSettings();
+  const { siteInfo, loading, hasError } = useSiteSettingsOptimized();
   const { navigateToHome } = useGlobalNavigationLinks();
+
+  // 🔧 CORREÇÃO: Sempre mostrar header, mesmo com erro de carregamento
+  const shouldShowHeader = !loading || hasError;
 
   const toggleMobileSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
@@ -76,20 +79,32 @@ const MainHeader = ({
               <Menu className="h-6 w-6" />
             </Button>
 
-            {!loading && (
-              <div 
-                onClick={handleLogoClick}
-                className="flex items-center min-w-0 cursor-pointer" 
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    handleLogoClick(e as any);
-                  }
-                }}
-                aria-label={`Página Inicial ${siteInfo.siteName}`}
-              >
-                {siteInfo.headerLayoutType === 'single_image' && siteInfo.headerImageUrl ? (
+            {/* 🔧 CORREÇÃO: Sempre mostrar header, independente do loading */}
+            <div 
+              onClick={handleLogoClick}
+              className="flex items-center min-w-0 cursor-pointer" 
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleLogoClick(e as any);
+                }
+              }}
+              aria-label={`Página Inicial ${siteInfo.siteName}`}
+            >
+              {loading && (
+                /* Indicador de carregamento */
+                <div className="text-xs text-blue-600 mr-2" title="Carregando configurações...">
+                  ⏳
+                </div>
+              )}
+              {hasError && (
+                /* Fallback visual quando há erro */
+                <div className="text-xs text-orange-600 mr-2" title="Usando configurações padrão">
+                  ⚠️
+                </div>
+              )}
+              {siteInfo.headerLayoutType === 'single_image' && siteInfo.headerImageUrl ? (
                   /* Modo Imagem Única */
                   <img
                     src={siteInfo.headerImageUrl}
@@ -127,7 +142,6 @@ const MainHeader = ({
                   </>
                 )}
               </div>
-            )}
           </div>
 
           {/* Center: Desktop Search Bar - Só aparece em desktop */}

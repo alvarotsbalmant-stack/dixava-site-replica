@@ -1861,6 +1861,7 @@ export type Database = {
           title: string | null
           trust_indicators: Json | null
           updated_at: string
+          uti_coins_cashback_percentage: number | null
           uti_pro_custom_price: number | null
           uti_pro_enabled: boolean | null
           uti_pro_price: number | null
@@ -1939,6 +1940,7 @@ export type Database = {
           title?: string | null
           trust_indicators?: Json | null
           updated_at?: string
+          uti_coins_cashback_percentage?: number | null
           uti_pro_custom_price?: number | null
           uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null
@@ -2017,6 +2019,7 @@ export type Database = {
           title?: string | null
           trust_indicators?: Json | null
           updated_at?: string
+          uti_coins_cashback_percentage?: number | null
           uti_pro_custom_price?: number | null
           uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null

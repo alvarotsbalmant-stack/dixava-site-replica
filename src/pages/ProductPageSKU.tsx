@@ -46,6 +46,19 @@ const ProductPageSKU = () => {
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
+  // CORREÇÃO: Forçar scroll ao topo quando componente mobile carrega
+  useEffect(() => {
+    if (isMobile && product) {
+      // Aguardar um tick para garantir que o componente mobile foi renderizado
+      const timer = setTimeout(() => {
+        console.log('🔧 [ProductPageSKU] Forçando scroll ao topo para mobile');
+        window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, product]);
+
   // Implementar scroll restoration
   useEffect(() => {
     return () => {
