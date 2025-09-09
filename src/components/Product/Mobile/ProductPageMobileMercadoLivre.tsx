@@ -247,10 +247,10 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
         {/* UTI Coins - Ganhos na Compra */}
         <div className="text-sm text-gray-600 mb-1 flex items-center gap-1">
           <span className="text-yellow-600">🪙</span>
-          <span>Ganhe <span className="font-medium text-yellow-700">{Math.floor(product.price * quantity * ((product.uti_coins_cashback_percentage || 0) / 100))} UTI Coins</span> nesta compra</span>
+          <span>Ganhe <span className="font-medium text-yellow-700">{Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins</span> nesta compra</span>
         </div>
         <div className="text-sm text-gray-500 mb-4">
-          = R$ {(Math.floor(product.price * quantity * ((product.uti_coins_cashback_percentage || 0) / 100)) * 0.01).toFixed(2)} para próximas compras
+          = R$ {(Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100) * 0.01).toFixed(2)} para próximas compras
         </div>
       </div>
 
