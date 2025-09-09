@@ -23,7 +23,7 @@ import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
-import OrderVerifier from './OrderVerifier';
+// import OrderVerifier from './OrderVerifier'; // Temporariamente comentado
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
 // import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
@@ -244,7 +244,8 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="order_verifier" className="mt-0">
-                <OrderVerifier />
+                {/* <OrderVerifier /> */}
+                <div className="p-4 text-white">Order Verifier temporariamente desabilitado</div>
               </TabsContent>
 
               <TabsContent value="emails" className="mt-0">

@@ -1,5 +1,6 @@
 // Export do novo modal profissional como padrão
-export { AuthModalFinal as AuthModal } from './AuthModalFinal';
+// export { AuthModalFinal as AuthModal } from './AuthModalFinal'; // Temporariamente comentado
+export { AuthModal } from './AuthModal'; // Fallback para o modal básico
 
 // Exports dos componentes auxiliares
 export { 

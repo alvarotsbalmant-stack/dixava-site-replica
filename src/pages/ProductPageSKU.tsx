@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useProductDetail } from '@/hooks/useProductDetail';
+import { useOptimizedProductDetail } from '@/hooks/useOptimizedProductDetail';
+import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -25,7 +26,11 @@ const ProductPageSKU = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { product, skuNavigation, loading, error } = useProductDetail(id);
+  // Usar o hook otimizado com cache
+  const { product, skuNavigation, loading, error } = useOptimizedProductDetail(id);
+  
+  // Implementar scroll restoration
+  usePageScrollRestoration();
   
   const { addToCart } = useCart();
   const { toast } = useToast();
@@ -59,12 +64,12 @@ const ProductPageSKU = () => {
     }
   }, [isMobile, product]);
 
-  // Implementar scroll restoration
+  // Garantir scroll ao topo no carregamento inicial
   useEffect(() => {
-    return () => {
-      // Cleanup quando sair da página de produto
-    };
-  }, [location.pathname]);
+    if (product && !loading) {
+      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+    }
+  }, [product, loading]);
 
   // Track product view when product loads
   useEffect(() => {
