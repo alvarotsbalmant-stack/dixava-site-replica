@@ -2,17 +2,17 @@
 // export { AuthModalFinal as AuthModal } from './AuthModalFinal'; // Temporariamente comentado
 export { AuthModal } from './AuthModal'; // Fallback para o modal básico
 
-// Exports dos componentes auxiliares
-export { 
-  ProfessionalInput,
-  PasswordInput,
-  ProfessionalButton,
-  FormError,
-  FormSuccess,
-  FormLoadingOverlay,
-  Divider,
-  SocialButton
-} from './FormComponents';
+// Exports dos componentes auxiliares removidos temporariamente
+// export { 
+//   ProfessionalInput,
+//   PasswordInput,
+//   ProfessionalButton,
+//   FormError,
+//   FormSuccess,
+//   FormLoadingOverlay,
+//   Divider,
+//   SocialButton
+// } from './FormComponents';
 
 export {
   FloatingParticles,
