@@ -58,7 +58,7 @@ export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border text-foreground max-w-md shadow-2xl">
+      <DialogContent className="bg-card border-border text-foreground max-w-md shadow-2xl sm:max-w-md w-full mx-4 sm:mx-auto">
         <DialogHeader className="text-center relative">
           <Button
             variant="ghost"

@@ -6,8 +6,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import Cart from '@/components/Cart';
 import MobileSearchBar from '@/components/Header/MobileSearchBar';
-import { AuthModal } from '@/components/Auth';
-import { AuthRequiredModal } from '@/components/Auth/AuthRequiredModal';
+import { SimpleAuthModal } from '@/components/Auth/SimpleAuthModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 
 interface AppContentProps {
   children: React.ReactNode;
@@ -27,7 +37,7 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const [showCart, setShowCart] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showAuthRequiredModal, setShowAuthRequiredModal] = useState(false);
+  const [showFavoritesAlert, setShowFavoritesAlert] = useState(false);
   
   // Integra sistema simples de scroll horizontal com navegação
   usePageScrollRestoration();
@@ -49,8 +59,8 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
     setShowAuthModal(true);
   };
 
-  const handleAuthRequiredOpen = () => {
-    setShowAuthRequiredModal(true);
+  const handleAuthRequired = () => {
+    setShowFavoritesAlert(true);
   };
   
   const toggleMobileSearch = () => {
@@ -67,7 +77,7 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
           onSearchOpen={handleSearchOpen}
           onCartOpen={handleCartOpen}
           onAuthOpen={handleAuthOpen}
-          onAuthRequired={handleAuthRequiredOpen}
+          onAuthRequired={handleAuthRequired}
         />
       )}
       
@@ -84,18 +94,31 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
       />
 
       {/* Modal de autenticação */}
-      <AuthModal 
+      <SimpleAuthModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
 
-      {/* Modal de aviso quando login é necessário */}
-      <AuthRequiredModal
-        isOpen={showAuthRequiredModal}
-        onClose={() => setShowAuthRequiredModal(false)}
-        onLoginClick={() => setShowAuthModal(true)}
-        feature="favoritos"
-      />
+      {/* Alert para favoritos */}
+      <AlertDialog open={showFavoritesAlert} onOpenChange={setShowFavoritesAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Login Necessário</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você precisa estar logado para favoritar produtos. Faça login ou crie uma conta para continuar.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowFavoritesAlert(false);
+              setShowAuthModal(true);
+            }}>
+              Entrar / Cadastrar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
