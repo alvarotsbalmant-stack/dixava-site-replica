@@ -249,9 +249,20 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
           <span className="text-yellow-600">🪙</span>
           <span>Ganhe <span className="font-medium text-yellow-700">{Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins</span> nesta compra</span>
         </div>
-        <div className="text-sm text-gray-500 mb-4">
+        <div className="text-sm text-gray-500 mb-2">
           = R$ {(Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100) * 0.01).toFixed(2)} para próximas compras
         </div>
+
+        {/* UTI Coins - Desconto */}
+        {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
+          <div className="text-sm text-green-600 mb-4 flex items-center gap-1">
+            <span>🏷️</span>
+            <span>
+              Até <span className="font-medium">{product.uti_coins_discount_percentage}% OFF</span> pagando com UTI Coins - 
+              Economize até <span className="font-medium">R$ {((product.price * (product.uti_coins_discount_percentage || 0)) / 100).toFixed(2).replace(".", ",")}</span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Estoque e Quantidade - SEM CARD AMARELO */}
