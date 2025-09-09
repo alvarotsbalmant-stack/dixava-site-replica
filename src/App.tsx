@@ -1,9 +1,9 @@
 import React, { Suspense, lazy } from "react";
 import './utils/categoryTestSimple';
-import './utils/n7ErrorSuppressor';
-import './styles/n7ErrorSuppression.css';
-import './styles/mobile-improvements.css';
-import './utils/debugHelper';
+import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
+import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
+import './styles/mobile-improvements.css'; // ← NOVO: CSS para melhorias mobile
+import './utils/debugHelper'; // ← Debug helper para diagnosticar problemas
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +18,7 @@ import { UIStateProvider } from '@/contexts/UIStateContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
-// import { EnterpriseTrackingProvider } from "@/contexts/EnterpriseTrackingContext"; // Temporariamente comentado
+import { EnterpriseTrackingProvider } from "@/contexts/EnterpriseTrackingContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
@@ -188,9 +188,9 @@ const App = () => {
                       <Toaster />
                       <Sonner />
                       <BrowserRouter>
-                         <AnalyticsProvider>
-                           {/* <EnterpriseTrackingProvider> */}
-                             <CartProvider>
+                        <AnalyticsProvider>
+                          <EnterpriseTrackingProvider>
+                            <CartProvider>
                             <AppWithPreloader>
                               <GlobalNavigationProvider>
                                  <LoadingOverlay />
@@ -294,8 +294,8 @@ const App = () => {
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
                          </CartProvider>
-            {/* EnterpriseTrackingProvider removido temporariamente */}
-          </AnalyticsProvider>
+                        </EnterpriseTrackingProvider>
+                       </AnalyticsProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                  </LoadingProvider>

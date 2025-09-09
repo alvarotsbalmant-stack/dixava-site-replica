@@ -8,7 +8,7 @@ import { useAnalytics } from '@/contexts/AnalyticsContext';
 const CheckoutButton = () => {
   const { items, sendToWhatsApp, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
-  const { trackEvent } = useAnalytics();
+  const { trackCheckoutStart, trackWhatsAppClick, trackCheckoutAbandon } = useAnalytics();
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -24,11 +24,11 @@ const CheckoutButton = () => {
     const itemCount = getCartItemsCount();
     
     // Track checkout start
-    trackEvent('checkout_start', { total: cartTotal, itemCount });
+    trackCheckoutStart(cartTotal, itemCount);
 
     try {
       // Track WhatsApp click
-      trackEvent('whatsapp_click', { source: 'checkout_button' });
+      trackWhatsAppClick('checkout_button');
       
       await sendToWhatsApp();
       toast({
@@ -37,7 +37,7 @@ const CheckoutButton = () => {
       });
     } catch (error) {
       // Track checkout abandonment
-      trackEvent('checkout_abandon', { total: cartTotal, itemCount, reason: 'whatsapp_error' });
+      trackCheckoutAbandon(cartTotal, itemCount, 'whatsapp_error');
       
       toast({
         title: "Erro",
