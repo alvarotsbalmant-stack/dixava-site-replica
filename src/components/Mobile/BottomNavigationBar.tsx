@@ -9,12 +9,14 @@ interface BottomNavigationBarProps {
   onSearchOpen?: () => void;
   onCartOpen?: () => void;
   onAuthOpen?: () => void;
+  onAuthRequired?: () => void;
 }
 
 export const BottomNavigationBar = ({ 
   onSearchOpen, 
   onCartOpen, 
-  onAuthOpen 
+  onAuthOpen,
+  onAuthRequired
 }: BottomNavigationBarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,7 +47,11 @@ export const BottomNavigationBar = ({
   };
 
   const handleFavoritesClick = () => {
-    navigate('/lista-desejos');
+    if (user) {
+      navigate('/lista-desejos');
+    } else if (onAuthRequired) {
+      onAuthRequired();
+    }
   };
 
   const handleAccountClick = () => {

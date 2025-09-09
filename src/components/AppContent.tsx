@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import Cart from '@/components/Cart';
 import MobileSearchBar from '@/components/Header/MobileSearchBar';
+import { AuthModal } from '@/components/Auth';
+import { AuthRequiredModal } from '@/components/Auth/AuthRequiredModal';
 
 interface AppContentProps {
   children: React.ReactNode;
@@ -18,12 +20,14 @@ interface AppContentProps {
 const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { openAuthModal } = useAuth();
+  const { user } = useAuth();
   const cartContext = useCart();
   
-  // ✅ Estados locais como na versão antiga
+  // ✅ Estados locais 
   const [showCart, setShowCart] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAuthRequiredModal, setShowAuthRequiredModal] = useState(false);
   
   // Integra sistema simples de scroll horizontal com navegação
   usePageScrollRestoration();
@@ -42,7 +46,11 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   };
   
   const handleAuthOpen = () => {
-    openAuthModal();
+    setShowAuthModal(true);
+  };
+
+  const handleAuthRequiredOpen = () => {
+    setShowAuthRequiredModal(true);
   };
   
   const toggleMobileSearch = () => {
@@ -59,6 +67,7 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
           onSearchOpen={handleSearchOpen}
           onCartOpen={handleCartOpen}
           onAuthOpen={handleAuthOpen}
+          onAuthRequired={handleAuthRequiredOpen}
         />
       )}
       
@@ -72,6 +81,20 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
       <MobileSearchBar 
         isOpen={isMobileSearchOpen} 
         onClose={toggleMobileSearch} 
+      />
+
+      {/* Modal de autenticação */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* Modal de aviso quando login é necessário */}
+      <AuthRequiredModal
+        isOpen={showAuthRequiredModal}
+        onClose={() => setShowAuthRequiredModal(false)}
+        onLoginClick={() => setShowAuthModal(true)}
+        feature="favoritos"
       />
     </>
   );
