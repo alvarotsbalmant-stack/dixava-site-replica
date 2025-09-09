@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProductsWithCache } from '@/hooks/useProductsWithCache';
-import { useProductSectionsWithCache } from '@/hooks/useProductSectionsWithCache';
+import { useProducts } from '@/hooks/useProducts';
+import { useProductSections } from '@/hooks/useProductSections';
 import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
@@ -34,9 +34,9 @@ const SectionPage: React.FC = () => {
     window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
   }, [sectionKey]); // Reexecuta quando sectionKey muda
 
-  // ✅ CORREÇÃO: Hooks com CACHE ROBUSTO (elimina recarregamento)
-  const { products, loading: productsLoading } = useProductsWithCache();
-  const { sections, loading: sectionsLoading } = useProductSectionsWithCache();
+  // Hooks para buscar dados
+  const { products, loading: productsLoading } = useProducts();
+  const { sections, loading: sectionsLoading } = useProductSections();
 
   // Encontrar a seção atual
   const currentSection = useMemo(() => {
