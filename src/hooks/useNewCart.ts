@@ -12,7 +12,7 @@ export const useNewCart = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { trackAddToCart, trackRemoveFromCart } = useAnalytics();
+  const { trackAddToCart, trackEvent } = useAnalytics();
 
   // Carregar carrinho do localStorage na inicialização
   useEffect(() => {
@@ -109,14 +109,19 @@ export const useNewCart = () => {
       // Find the item being removed for analytics
       const removedItem = prev.find(item => item.id === itemId);
       if (removedItem) {
-        trackRemoveFromCart(removedItem.product.id, removedItem.product.name, removedItem.product.price);
+        trackEvent('remove_from_cart', {
+          productId: removedItem.product.id,
+          productName: removedItem.product.name,
+          price: removedItem.product.price,
+          quantity: removedItem.quantity
+        });
       }
       
       const newCart = prev.filter(item => item.id !== itemId);
       console.log('Item removido. Carrinho agora tem:', newCart.length, 'items');
       return newCart;
     });
-  }, [trackRemoveFromCart]);
+  }, [trackEvent]);
 
   const updateQuantity = useCallback((productId: string, size: string | undefined, color: string | undefined, quantity: number) => {
     const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
