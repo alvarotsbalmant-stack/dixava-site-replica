@@ -93,7 +93,11 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
   const handleAddToCart = async () => {
     try {
-      await addToCart(product);
+      // Adicionar múltiplas vezes baseado na quantidade
+      for (let i = 0; i < quantity; i++) {
+        await addToCart(product);
+      }
+      
       trackEvent('add_to_cart', {
         product_id: product.id,
         product_name: product.name,
@@ -102,10 +106,11 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
       });
       
       if (user) {
-        await earnCoins('add_to_cart', 10, `Adicionou ${product.name} ao carrinho`);
+        await earnCoins('add_to_cart', 10 * quantity, `Adicionou ${quantity}x ${product.name} ao carrinho`);
       }
       
-      onAddToCart(product);
+      // Remover chamada duplicada - onAddToCart não deve ser chamado aqui
+      // pois addToCart já adiciona ao carrinho
     } catch (error) {
       console.error('Erro ao adicionar ao carrinho:', error);
     }
