@@ -20,8 +20,9 @@ const UTICoinsInfo: React.FC<UTICoinsInfoProps> = ({
   const { user } = useAuth();
   const { balance } = useUTICoins();
 
-  // Cálculo de coins ganhos (2% do valor da compra)
-  const coinsEarned = Math.floor((product.price * quantity) * 0.02);
+  // Cálculo de coins ganhos usando o valor real do produto
+  const cashbackPercentage = product.uti_coins_cashback_percentage || 0;
+  const coinsEarned = Math.floor((product.price * quantity) * (cashbackPercentage / 100));
   
   // Valor em reais dos coins ganhos (1 coin = R$ 0,01)
   const coinsValue = coinsEarned * 0.01;
@@ -58,7 +59,7 @@ const UTICoinsInfo: React.FC<UTICoinsInfoProps> = ({
             </div>
             
             <div className="text-xs text-gray-600 space-y-1">
-              <div>• Base: {coinsEarned} coins (2% do valor)</div>
+              <div>• Base: {coinsEarned} coins ({cashbackPercentage}% do valor)</div>
               {quantityBonus > 0 && (
                 <div className="text-green-600">
                   • Bônus quantidade: +{quantityBonus} coins
@@ -122,7 +123,7 @@ const UTICoinsInfo: React.FC<UTICoinsInfoProps> = ({
         </div>
         
         <div className="text-xs text-purple-700 space-y-1 mb-3">
-          <div>🥉 Bronze: 2% em coins</div>
+          <div>🥉 Bronze: {cashbackPercentage}% em coins</div>
           <div>🥈 Prata: 3% em coins (R$ 500+)</div>
           <div>🥇 Ouro: 4% em coins (R$ 1.500+)</div>
           <div>💎 Diamante: 5% em coins (R$ 3.000+)</div>

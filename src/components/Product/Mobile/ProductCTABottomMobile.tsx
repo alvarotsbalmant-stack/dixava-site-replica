@@ -33,9 +33,9 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
   };
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      onAddToCart(product);
-    }
+    // Chamar onAddToCart apenas uma vez, não em loop
+    // O sistema já deve lidar com a quantidade internamente
+    onAddToCart(product);
     setIsExpanded(false);
   };
 

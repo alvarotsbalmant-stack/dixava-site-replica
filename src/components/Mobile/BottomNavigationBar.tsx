@@ -4,22 +4,28 @@ import { Home, Search, ShoppingCart, Heart, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCart } from '@/contexts/CartContext';
 
 interface BottomNavigationBarProps {
   onSearchOpen?: () => void;
   onCartOpen?: () => void;
   onAuthOpen?: () => void;
+  onAuthRequired?: () => void;
 }
 
 export const BottomNavigationBar = ({ 
   onSearchOpen, 
   onCartOpen, 
-  onAuthOpen 
+  onAuthOpen,
+  onAuthRequired
 }: BottomNavigationBarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { getCartItemsCount } = useCart();
   const isMobile = useIsMobile();
+  
+  const cartItemsCount = getCartItemsCount();
 
   // Só renderiza no mobile
   if (!isMobile) return null;
@@ -45,7 +51,11 @@ export const BottomNavigationBar = ({
   };
 
   const handleFavoritesClick = () => {
-    navigate('/lista-desejos');
+    if (user) {
+      navigate('/lista-desejos');
+    } else if (onAuthRequired) {
+      onAuthRequired();
+    }
   };
 
   const handleAccountClick = () => {
@@ -90,9 +100,18 @@ export const BottomNavigationBar = ({
           onClick={handleCartClick}
           className="flex flex-col items-center justify-center flex-1 h-full space-y-1 text-gray-500 hover:text-gray-700 transition-colors duration-200 relative"
         >
-          <ShoppingCart className="w-5 h-5" />
+          <div className="relative">
+            <ShoppingCart className="w-5 h-5" />
+            {cartItemsCount > 0 && (
+              <span className={cn(
+                "absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full",
+                "bg-red-600 text-white text-[10px] font-bold min-w-[16px]"
+              )}>
+                {cartItemsCount > 99 ? '99+' : cartItemsCount}
+              </span>
+            )}
+          </div>
           <span className="text-xs font-medium">Carrinho</span>
-          {/* Badge do carrinho pode ser adicionado aqui */}
         </button>
 
         {/* Favorites */}

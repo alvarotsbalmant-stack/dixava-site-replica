@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { SKUNavigation } from '@/hooks/useProducts/types';
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, Clock, Check, Plus, Minus, ChevronRight, ChevronLeft, Zap } from 'lucide-react';
+import { ShoppingCart, Heart, Share2, Star, Truck, Shield, Clock, Check, Plus, Minus, ChevronRight, ChevronLeft, Zap, Coins, Tag, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -93,7 +93,11 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
   const handleAddToCart = async () => {
     try {
-      await addToCart(product);
+      // Adicionar múltiplas vezes baseado na quantidade
+      for (let i = 0; i < quantity; i++) {
+        await addToCart(product);
+      }
+      
       trackEvent('add_to_cart', {
         product_id: product.id,
         product_name: product.name,
@@ -102,10 +106,11 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
       });
       
       if (user) {
-        await earnCoins('add_to_cart', 10, `Adicionou ${product.name} ao carrinho`);
+        await earnCoins('add_to_cart', 10 * quantity, `Adicionou ${quantity}x ${product.name} ao carrinho`);
       }
       
-      onAddToCart(product);
+      // Remover chamada duplicada - onAddToCart não deve ser chamado aqui
+      // pois addToCart já adiciona ao carrinho
     } catch (error) {
       console.error('Erro ao adicionar ao carrinho:', error);
     }
@@ -244,14 +249,35 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
         {/* Card de Frete Dinâmico */}
         <DynamicDeliveryMobile productPrice={product.price} />
 
-        {/* UTI Coins - Ganhos na Compra */}
-        <div className="text-sm text-gray-600 mb-1 flex items-center gap-1">
-          <span className="text-yellow-600">🪙</span>
-          <span>Ganhe <span className="font-medium text-yellow-700">{Math.floor(product.price * quantity * 0.02)} UTI Coins</span> nesta compra</span>
-        </div>
-        <div className="text-sm text-gray-500 mb-4">
-          = R$ {(Math.floor(product.price * quantity * 0.02) * 0.01).toFixed(2)} para próximas compras
-        </div>
+        {/* UTI Coins - Cashback (só aparece se tiver configurado) */}
+        {product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0 && (
+          <>
+            <div className="text-sm text-gray-600 mb-1 flex items-center gap-1">
+              <Coins className="w-4 h-4 text-yellow-600" />
+              <span>Ganhe <span className="font-medium text-yellow-700">{Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins</span> nesta compra</span>
+            </div>
+            <div className="text-sm text-gray-500 mb-2">
+              = R$ {(Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100) * 0.01).toFixed(2)} para próximas compras
+            </div>
+          </>
+        )}
+
+        {/* UTI Coins - Desconto (só aparece se tiver configurado) */}
+        {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
+          <div className="text-sm text-green-600 mb-4 flex items-center gap-1">
+            <Tag className="w-4 h-4 text-green-600" />
+            <span>
+              Até <span className="font-medium">{product.uti_coins_discount_percentage}% OFF</span> pagando com UTI Coins - 
+              Economize até <span className="font-medium">R$ {((product.price * (product.uti_coins_discount_percentage || 0)) / 100).toFixed(2).replace(".", ",")}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Espaçamento só se tiver alguma seção UTI Coins */}
+        {((product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0) || 
+          (product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0)) && (
+          <div className="mb-2"></div>
+        )}
       </div>
 
       {/* Estoque e Quantidade - SEM CARD AMARELO */}
