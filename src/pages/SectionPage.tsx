@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductSections } from '@/hooks/useProductSections';
-import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import { useCart } from '@/contexts/CartContext';
@@ -24,15 +23,6 @@ const SectionPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [promotionFilter, setPromotionFilter] = useState('all');
-
-  // ✅ CORREÇÃO: Sistema de scroll restoration (como na homepage)
-  usePageScrollRestoration();
-  
-  // ✅ CORREÇÃO: Garantir que sempre comece no topo na primeira carga
-  useEffect(() => {
-    console.log('🔧 [SectionPage] Componente montado, forçando scroll ao topo');
-    window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-  }, [sectionKey]); // Reexecuta quando sectionKey muda
 
   // Hooks para buscar dados
   const { products, loading: productsLoading } = useProducts();
